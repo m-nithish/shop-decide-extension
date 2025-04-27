@@ -22,6 +22,7 @@ const ProductNotes = ({ productId, initialNotes = '' }: ProductNotesProps) => {
     if (!user) return;
 
     try {
+      // Update this to use the correct table name
       const { error } = await supabase
         .from('product_notes')
         .upsert({

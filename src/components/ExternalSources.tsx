@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Youtube, Pinterest, ExternalLink } from 'lucide-react';
+import { Youtube, ExternalLink, Image } from 'lucide-react';
 
 interface ExternalSource {
   id: string;
@@ -23,7 +23,7 @@ const ExternalSources = ({ sources, onAddSource }: ExternalSourcesProps) => {
       case 'youtube':
         return <Youtube className="h-4 w-4" />;
       case 'pinterest':
-        return <Pinterest className="h-4 w-4" />;
+        return <Image className="h-4 w-4" />; // Using Image icon instead of Pinterest
       default:
         return <ExternalLink className="h-4 w-4" />;
     }

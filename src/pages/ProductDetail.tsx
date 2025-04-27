@@ -32,37 +32,50 @@ const ProductDetail = () => {
 
   const loadProductData = async () => {
     try {
-      // Load notes
-      const { data: notesData } = await supabase
+      // Load notes - make sure the table name matches what was created in the SQL
+      const { data: notesData, error: notesError } = await supabase
         .from('product_notes')
         .select('content')
         .eq('product_id', id)
         .single();
+
+      if (notesError && notesError.code !== 'PGRST116') {
+        console.error('Error loading notes:', notesError);
+      }
 
       if (notesData) {
         setNotes(notesData.content);
       }
 
       // Load product links
-      const { data: linksData } = await supabase
+      const { data: linksData, error: linksError } = await supabase
         .from('product_links')
         .select('*')
         .eq('product_id', id);
+
+      if (linksError) {
+        console.error('Error loading links:', linksError);
+      }
 
       if (linksData) {
         setProductLinks(linksData);
       }
 
       // Load external sources
-      const { data: sourcesData } = await supabase
+      const { data: sourcesData, error: sourcesError } = await supabase
         .from('external_sources')
         .select('*')
         .eq('product_id', id);
+
+      if (sourcesError) {
+        console.error('Error loading sources:', sourcesError);
+      }
 
       if (sourcesData) {
         setExternalSources(sourcesData);
       }
     } catch (error) {
+      console.error('Error in loadProductData:', error);
       toast({
         variant: "destructive",
         title: "Error",
