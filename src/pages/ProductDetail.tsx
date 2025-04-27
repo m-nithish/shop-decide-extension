@@ -32,47 +32,32 @@ const ProductDetail = () => {
 
   const loadProductData = async () => {
     try {
-      // Load notes - make sure the table name matches what was created in the SQL
-      const { data: notesData, error: notesError } = await supabase
-        .from('product_notes')
-        .select('content')
-        .eq('product_id', id)
-        .single();
+      // Use raw SQL queries via RPC functions to avoid type issues
+      // Fetch product notes
+      const { data: notesData } = await supabase.rpc('get_product_notes', { 
+        p_product_id: id 
+      });
 
-      if (notesError && notesError.code !== 'PGRST116') {
-        console.error('Error loading notes:', notesError);
+      if (notesData && notesData.length > 0) {
+        setNotes(notesData[0].content || '');
       }
 
-      if (notesData) {
-        setNotes(notesData.content);
-      }
-
-      // Load product links
-      const { data: linksData, error: linksError } = await supabase
-        .from('product_links')
-        .select('*')
-        .eq('product_id', id);
-
-      if (linksError) {
-        console.error('Error loading links:', linksError);
-      }
+      // Fetch product links
+      const { data: linksData } = await supabase.rpc('get_product_links', {
+        p_product_id: id
+      });
 
       if (linksData) {
-        setProductLinks(linksData);
+        setProductLinks(linksData || []);
       }
 
-      // Load external sources
-      const { data: sourcesData, error: sourcesError } = await supabase
-        .from('external_sources')
-        .select('*')
-        .eq('product_id', id);
-
-      if (sourcesError) {
-        console.error('Error loading sources:', sourcesError);
-      }
+      // Fetch external sources
+      const { data: sourcesData } = await supabase.rpc('get_external_sources', {
+        p_product_id: id
+      });
 
       if (sourcesData) {
-        setExternalSources(sourcesData);
+        setExternalSources(sourcesData || []);
       }
     } catch (error) {
       console.error('Error in loadProductData:', error);
