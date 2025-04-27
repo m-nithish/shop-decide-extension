@@ -1,27 +1,76 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { 
-  Card, 
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle 
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Link as LinkIcon, ArrowLeft, Trash } from 'lucide-react';
+import { ArrowLeft, Trash } from 'lucide-react';
 import Header from '@/components/Header';
 import { useProducts } from '@/context/ProductsContext';
+import ProductNotes from '@/components/ProductNotes';
+import ProductLinksTable from '@/components/ProductLinksTable';
+import ExternalSources from '@/components/ExternalSources';
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { products, getCollection, deleteProduct } = useProducts();
+  const { toast } = useToast();
+  const [notes, setNotes] = useState("");
+  const [productLinks, setProductLinks] = useState([]);
+  const [externalSources, setExternalSources] = useState([]);
   
   const product = products.find(p => p.id === id);
   
+  useEffect(() => {
+    if (id) {
+      loadProductData();
+    }
+  }, [id]);
+
+  const loadProductData = async () => {
+    try {
+      // Load notes
+      const { data: notesData } = await supabase
+        .from('product_notes')
+        .select('content')
+        .eq('product_id', id)
+        .single();
+
+      if (notesData) {
+        setNotes(notesData.content);
+      }
+
+      // Load product links
+      const { data: linksData } = await supabase
+        .from('product_links')
+        .select('*')
+        .eq('product_id', id);
+
+      if (linksData) {
+        setProductLinks(linksData);
+      }
+
+      // Load external sources
+      const { data: sourcesData } = await supabase
+        .from('external_sources')
+        .select('*')
+        .eq('product_id', id);
+
+      if (sourcesData) {
+        setExternalSources(sourcesData);
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load product data"
+      });
+    }
+  };
+
   if (!product) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -61,83 +110,66 @@ const ProductDetail = () => {
           
           <div className="flex justify-between items-start">
             <h1 className="text-2xl font-bold">{product.title}</h1>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => window.open(product.productUrl, '_blank')}
-              >
-                <LinkIcon className="h-4 w-4 mr-2" /> Visit Site
-              </Button>
-              <Button 
-                variant="destructive"
-                onClick={handleDelete}
-              >
-                <Trash className="h-4 w-4 mr-2" /> Delete
-              </Button>
-            </div>
+            <Button 
+              variant="destructive"
+              onClick={handleDelete}
+            >
+              <Trash className="h-4 w-4 mr-2" /> Delete
+            </Button>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="rounded-lg overflow-hidden border bg-white">
-            <img 
-              src={product.imageUrl} 
-              alt={product.title} 
-              className="w-full h-auto object-cover"
-            />
-          </div>
-          
-          <div className="space-y-6">
-            <Card>
+          <div>
+            <div className="rounded-lg overflow-hidden border bg-white mb-8">
+              <img 
+                src={product.imageUrl} 
+                alt={product.title} 
+                className="w-full h-auto object-cover"
+              />
+            </div>
+            
+            <Card className="mb-8">
               <CardHeader>
                 <CardTitle>Product Details</CardTitle>
                 <CardDescription>
-                  Added on {formattedDate} from {product.sourceName}
+                  Added on {formattedDate}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Price</h3>
-                  <p className="text-xl font-bold">{product.price}</p>
-                </div>
-                
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Description</h3>
-                  <p className="text-gray-700">{product.description}</p>
-                </div>
-                
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Collection</h3>
-                  {collection ? (
-                    <Link to={`/collection/${collection.id}`}>
-                      <Badge 
-                        className="mt-1 cursor-pointer"
-                        style={{ 
-                          backgroundColor: `${collection.color}20`, 
-                          color: collection.color 
-                        }}
-                      >
-                        {collection.name}
-                      </Badge>
-                    </Link>
-                  ) : (
-                    <p className="text-gray-700">Not in a collection</p>
-                  )}
-                </div>
-                
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Source URL</h3>
-                  <a 
-                    href={product.productUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline break-all"
-                  >
-                    {product.productUrl}
-                  </a>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Description</h3>
+                    <p className="text-gray-700">{product.description}</p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Collection</h3>
+                    {collection ? (
+                      <Link to={`/collection/${collection.id}`}>
+                        <Badge 
+                          className="mt-1 cursor-pointer"
+                          style={{ 
+                            backgroundColor: `${collection.color}20`, 
+                            color: collection.color 
+                          }}
+                        >
+                          {collection.name}
+                        </Badge>
+                      </Link>
+                    ) : (
+                      <p className="text-gray-700">Not in a collection</p>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
+          </div>
+          
+          <div className="space-y-8">
+            <ProductNotes productId={id} initialNotes={notes} />
+            <ProductLinksTable links={productLinks} onAddLink={() => {}} />
+            <ExternalSources sources={externalSources} onAddSource={() => {}} />
           </div>
         </div>
       </main>
