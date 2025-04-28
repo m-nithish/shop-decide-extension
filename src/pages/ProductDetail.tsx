@@ -13,14 +13,45 @@ import ExternalSources from '@/components/ExternalSources';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+interface ProductNote {
+  id: string;
+  product_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ProductLink {
+  id: string;
+  product_id: string;
+  source_name: string;
+  product_name: string;
+  url: string;
+  price: number;
+  rating: number;
+  review_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ExternalSource {
+  id: string;
+  product_id: string;
+  title: string;
+  url: string;
+  source_type: string;
+  created_at: string;
+}
+
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { products, getCollection, deleteProduct } = useProducts();
   const { toast } = useToast();
   const [notes, setNotes] = useState("");
-  const [productLinks, setProductLinks] = useState([]);
-  const [externalSources, setExternalSources] = useState([]);
+  const [productLinks, setProductLinks] = useState<ProductLink[]>([]);
+  const [externalSources, setExternalSources] = useState<ExternalSource[]>([]);
   
   const product = products.find(p => p.id === id);
   
@@ -32,29 +63,40 @@ const ProductDetail = () => {
 
   const loadProductData = async () => {
     try {
-      // Use raw SQL queries via RPC functions to avoid type issues
-      // Fetch product notes
-      const { data: notesData } = await supabase.rpc('get_product_notes', { 
+      // Fetch product notes with proper typing
+      const { data: notesData, error: notesError } = await supabase.rpc<ProductNote[]>('get_product_notes', { 
         p_product_id: id 
       });
+
+      if (notesError) {
+        console.error('Error loading notes:', notesError);
+      }
 
       if (notesData && notesData.length > 0) {
         setNotes(notesData[0].content || '');
       }
 
-      // Fetch product links
-      const { data: linksData } = await supabase.rpc('get_product_links', {
+      // Fetch product links with proper typing
+      const { data: linksData, error: linksError } = await supabase.rpc<ProductLink[]>('get_product_links', {
         p_product_id: id
       });
+
+      if (linksError) {
+        console.error('Error loading links:', linksError);
+      }
 
       if (linksData) {
         setProductLinks(linksData || []);
       }
 
-      // Fetch external sources
-      const { data: sourcesData } = await supabase.rpc('get_external_sources', {
+      // Fetch external sources with proper typing
+      const { data: sourcesData, error: sourcesError } = await supabase.rpc<ExternalSource[]>('get_external_sources', {
         p_product_id: id
       });
+
+      if (sourcesError) {
+        console.error('Error loading sources:', sourcesError);
+      }
 
       if (sourcesData) {
         setExternalSources(sourcesData || []);

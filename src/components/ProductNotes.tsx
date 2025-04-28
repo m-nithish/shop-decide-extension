@@ -22,19 +22,12 @@ const ProductNotes = ({ productId, initialNotes = '' }: ProductNotesProps) => {
     if (!user) return;
 
     try {
-      // Using a raw query approach to avoid type issues
-      const { error } = await supabase
-        .from('profiles')
-        .insert({ id: 'temp' })
-        .select()
-        .then(async () => {
-          // Use rpc as a workaround for typing issues
-          return await supabase.rpc('save_product_notes', {
-            p_product_id: productId,
-            p_user_id: user.id,
-            p_content: notes
-          });
-        });
+      // Use rpc call directly without the type-problematic chaining
+      const { error } = await supabase.rpc('save_product_notes', {
+        p_product_id: productId,
+        p_user_id: user.id,
+        p_content: notes
+      });
 
       if (error) throw error;
 
