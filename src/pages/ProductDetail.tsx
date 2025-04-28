@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -35,13 +34,28 @@ interface ProductLink {
   updated_at: string;
 }
 
-interface ExternalSource {
+interface ProductExternalSource {
   id: string;
   product_id: string;
   title: string;
   url: string;
-  source_type: string;
+  source_type: 'youtube' | 'pinterest' | 'other';
   created_at: string;
+}
+
+type GetProductNotesResponse = {
+  data: ProductNote[] | null;
+  error: Error | null;
+}
+
+type GetProductLinksResponse = {
+  data: ProductLink[] | null;
+  error: Error | null;
+}
+
+type GetExternalSourcesResponse = {
+  data: ProductExternalSource[] | null;
+  error: Error | null;
 }
 
 const ProductDetail = () => {
@@ -51,7 +65,7 @@ const ProductDetail = () => {
   const { toast } = useToast();
   const [notes, setNotes] = useState("");
   const [productLinks, setProductLinks] = useState<ProductLink[]>([]);
-  const [externalSources, setExternalSources] = useState<ExternalSource[]>([]);
+  const [externalSources, setExternalSources] = useState<ProductExternalSource[]>([]);
   
   const product = products.find(p => p.id === id);
   
@@ -63,10 +77,9 @@ const ProductDetail = () => {
 
   const loadProductData = async () => {
     try {
-      // Fetch product notes with proper typing
-      const { data: notesData, error: notesError } = await supabase.rpc<ProductNote[]>('get_product_notes', { 
+      const { data: notesData, error: notesError } = await supabase.rpc('get_product_notes', { 
         p_product_id: id 
-      });
+      }) as GetProductNotesResponse;
 
       if (notesError) {
         console.error('Error loading notes:', notesError);
@@ -76,10 +89,9 @@ const ProductDetail = () => {
         setNotes(notesData[0].content || '');
       }
 
-      // Fetch product links with proper typing
-      const { data: linksData, error: linksError } = await supabase.rpc<ProductLink[]>('get_product_links', {
+      const { data: linksData, error: linksError } = await supabase.rpc('get_product_links', {
         p_product_id: id
-      });
+      }) as GetProductLinksResponse;
 
       if (linksError) {
         console.error('Error loading links:', linksError);
@@ -89,17 +101,20 @@ const ProductDetail = () => {
         setProductLinks(linksData || []);
       }
 
-      // Fetch external sources with proper typing
-      const { data: sourcesData, error: sourcesError } = await supabase.rpc<ExternalSource[]>('get_external_sources', {
+      const { data: sourcesData, error: sourcesError } = await supabase.rpc('get_external_sources', {
         p_product_id: id
-      });
+      }) as GetExternalSourcesResponse;
 
       if (sourcesError) {
         console.error('Error loading sources:', sourcesError);
       }
 
       if (sourcesData) {
-        setExternalSources(sourcesData || []);
+        const mappedSources = (sourcesData || []).map(source => ({
+          ...source,
+          source_type: (source.source_type as 'youtube' | 'pinterest' | 'other') || 'other'
+        }));
+        setExternalSources(mappedSources);
       }
     } catch (error) {
       console.error('Error in loadProductData:', error);

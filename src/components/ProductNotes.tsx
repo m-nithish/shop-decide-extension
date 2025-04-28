@@ -12,6 +12,12 @@ interface ProductNotesProps {
   initialNotes?: string;
 }
 
+// Define correct return type for the RPC function
+type SaveProductNotesResponse = {
+  data: null;
+  error: Error | null;
+}
+
 const ProductNotes = ({ productId, initialNotes = '' }: ProductNotesProps) => {
   const [notes, setNotes] = useState(initialNotes);
   const [isEditing, setIsEditing] = useState(false);
@@ -22,12 +28,12 @@ const ProductNotes = ({ productId, initialNotes = '' }: ProductNotesProps) => {
     if (!user) return;
 
     try {
-      // Use rpc call directly without the type-problematic chaining
+      // Use proper type casting for the RPC call
       const { error } = await supabase.rpc('save_product_notes', {
         p_product_id: productId,
         p_user_id: user.id,
         p_content: notes
-      });
+      }) as SaveProductNotesResponse;
 
       if (error) throw error;
 
