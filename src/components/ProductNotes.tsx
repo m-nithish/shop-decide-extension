@@ -28,9 +28,9 @@ const ProductNotes = ({ productId, initialNotes = '' }: ProductNotesProps) => {
     if (!user) return;
 
     try {
-      // Use proper type casting for the RPC call
+      // Use proper type casting and explicit parameter type definitions
       const { error } = await supabase.rpc('save_product_notes', {
-        p_product_id: productId,
+        p_product_id: productId as string,
         p_user_id: user.id,
         p_content: notes
       }) as SaveProductNotesResponse;

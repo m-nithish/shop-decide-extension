@@ -58,6 +58,13 @@ type GetExternalSourcesResponse = {
   error: Error | null;
 }
 
+type ExternalSource = {
+  id: string;
+  title: string;
+  url: string;
+  source_type: 'youtube' | 'pinterest' | 'other';
+}
+
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -65,7 +72,7 @@ const ProductDetail = () => {
   const { toast } = useToast();
   const [notes, setNotes] = useState("");
   const [productLinks, setProductLinks] = useState<ProductLink[]>([]);
-  const [externalSources, setExternalSources] = useState<ProductExternalSource[]>([]);
+  const [externalSources, setExternalSources] = useState<ExternalSource[]>([]);
   
   const product = products.find(p => p.id === id);
   
@@ -78,7 +85,7 @@ const ProductDetail = () => {
   const loadProductData = async () => {
     try {
       const { data: notesData, error: notesError } = await supabase.rpc('get_product_notes', { 
-        p_product_id: id 
+        p_product_id: id as string 
       }) as GetProductNotesResponse;
 
       if (notesError) {
@@ -90,7 +97,7 @@ const ProductDetail = () => {
       }
 
       const { data: linksData, error: linksError } = await supabase.rpc('get_product_links', {
-        p_product_id: id
+        p_product_id: id as string
       }) as GetProductLinksResponse;
 
       if (linksError) {
@@ -102,7 +109,7 @@ const ProductDetail = () => {
       }
 
       const { data: sourcesData, error: sourcesError } = await supabase.rpc('get_external_sources', {
-        p_product_id: id
+        p_product_id: id as string
       }) as GetExternalSourcesResponse;
 
       if (sourcesError) {
@@ -110,11 +117,13 @@ const ProductDetail = () => {
       }
 
       if (sourcesData) {
-        const mappedSources = (sourcesData || []).map(source => ({
-          ...source,
-          source_type: (source.source_type as 'youtube' | 'pinterest' | 'other') || 'other'
+        const transformedSources: ExternalSource[] = (sourcesData || []).map(source => ({
+          id: source.id,
+          title: source.title,
+          url: source.url,
+          source_type: (source.source_type as 'youtube' | 'pinterest' | 'other')
         }));
-        setExternalSources(mappedSources);
+        setExternalSources(transformedSources);
       }
     } catch (error) {
       console.error('Error in loadProductData:', error);

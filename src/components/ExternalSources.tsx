@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Youtube, ExternalLink, Image } from 'lucide-react';
 
-// Update interface to match what ProductDetail.tsx expects
+// Define interface to match what ProductDetail.tsx expects
 interface ExternalSource {
   id: string;
   title: string;
