@@ -19,3 +19,6 @@ export interface Collection {
   color: string;
   productCount?: number;
 }
+
+// Re-export Supabase types for easier imports
+export * from './supabase';

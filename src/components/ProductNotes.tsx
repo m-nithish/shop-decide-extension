@@ -6,16 +6,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/context/AuthContext';
+import { SaveProductNotesParams, SaveProductNotesResponse } from "@/types/supabase";
 
 interface ProductNotesProps {
   productId: string;
   initialNotes?: string;
-}
-
-// Define correct return type for the RPC function
-type SaveProductNotesResponse = {
-  data: null;
-  error: Error | null;
 }
 
 const ProductNotes = ({ productId, initialNotes = '' }: ProductNotesProps) => {
@@ -28,12 +23,13 @@ const ProductNotes = ({ productId, initialNotes = '' }: ProductNotesProps) => {
     if (!user) return;
 
     try {
-      // Use proper type casting and explicit parameter type definitions
-      const { error } = await supabase.rpc('save_product_notes', {
-        p_product_id: productId as string,
+      const params: SaveProductNotesParams = {
+        p_product_id: productId,
         p_user_id: user.id,
         p_content: notes
-      }) as SaveProductNotesResponse;
+      };
+      
+      const { error } = await supabase.rpc('save_product_notes', params) as SaveProductNotesResponse;
 
       if (error) throw error;
 

@@ -4,14 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Youtube, ExternalLink, Image } from 'lucide-react';
-
-// Define interface to match what ProductDetail.tsx expects
-interface ExternalSource {
-  id: string;
-  title: string;
-  url: string;
-  source_type: 'youtube' | 'pinterest' | 'other';
-}
+import { ExternalSource } from '@/types/supabase';
 
 interface ExternalSourcesProps {
   sources: ExternalSource[];

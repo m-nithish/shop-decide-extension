@@ -11,59 +11,17 @@ import ProductLinksTable from '@/components/ProductLinksTable';
 import ExternalSources from '@/components/ExternalSources';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-interface ProductNote {
-  id: string;
-  product_id: string;
-  user_id: string;
-  content: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface ProductLink {
-  id: string;
-  product_id: string;
-  source_name: string;
-  product_name: string;
-  url: string;
-  price: number;
-  rating: number;
-  review_count: number;
-  created_at: string;
-  updated_at: string;
-}
-
-interface ProductExternalSource {
-  id: string;
-  product_id: string;
-  title: string;
-  url: string;
-  source_type: 'youtube' | 'pinterest' | 'other';
-  created_at: string;
-}
-
-type GetProductNotesResponse = {
-  data: ProductNote[] | null;
-  error: Error | null;
-}
-
-type GetProductLinksResponse = {
-  data: ProductLink[] | null;
-  error: Error | null;
-}
-
-type GetExternalSourcesResponse = {
-  data: ProductExternalSource[] | null;
-  error: Error | null;
-}
-
-type ExternalSource = {
-  id: string;
-  title: string;
-  url: string;
-  source_type: 'youtube' | 'pinterest' | 'other';
-}
+import { 
+  ExternalSource, 
+  GetProductNotesParams, 
+  GetProductNotesResponse, 
+  GetProductLinksParams,
+  GetProductLinksResponse,
+  ProductLink,
+  GetExternalSourcesParams,
+  GetExternalSourcesResponse,
+  ProductExternalSource
+} from '@/types/supabase';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -84,9 +42,11 @@ const ProductDetail = () => {
 
   const loadProductData = async () => {
     try {
-      const { data: notesData, error: notesError } = await supabase.rpc('get_product_notes', { 
-        p_product_id: id as string 
-      }) as GetProductNotesResponse;
+      const notesParams: GetProductNotesParams = { p_product_id: id! };
+      const { data: notesData, error: notesError } = await supabase.rpc(
+        'get_product_notes', 
+        notesParams
+      ) as GetProductNotesResponse;
 
       if (notesError) {
         console.error('Error loading notes:', notesError);
@@ -96,9 +56,11 @@ const ProductDetail = () => {
         setNotes(notesData[0].content || '');
       }
 
-      const { data: linksData, error: linksError } = await supabase.rpc('get_product_links', {
-        p_product_id: id as string
-      }) as GetProductLinksResponse;
+      const linksParams: GetProductLinksParams = { p_product_id: id! };
+      const { data: linksData, error: linksError } = await supabase.rpc(
+        'get_product_links',
+        linksParams
+      ) as GetProductLinksResponse;
 
       if (linksError) {
         console.error('Error loading links:', linksError);
@@ -108,9 +70,11 @@ const ProductDetail = () => {
         setProductLinks(linksData || []);
       }
 
-      const { data: sourcesData, error: sourcesError } = await supabase.rpc('get_external_sources', {
-        p_product_id: id as string
-      }) as GetExternalSourcesResponse;
+      const sourcesParams: GetExternalSourcesParams = { p_product_id: id! };
+      const { data: sourcesData, error: sourcesError } = await supabase.rpc(
+        'get_external_sources',
+        sourcesParams
+      ) as GetExternalSourcesResponse;
 
       if (sourcesError) {
         console.error('Error loading sources:', sourcesError);
@@ -121,7 +85,7 @@ const ProductDetail = () => {
           id: source.id,
           title: source.title,
           url: source.url,
-          source_type: (source.source_type as 'youtube' | 'pinterest' | 'other')
+          source_type: source.source_type
         }));
         setExternalSources(transformedSources);
       }
