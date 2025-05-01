@@ -4,9 +4,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/context/AuthContext';
-import { SaveProductNotesParams, SaveProductNotesResponse } from "@/types/supabase";
+import { SaveProductNotesParams } from "@/types/supabase";
+import { callRPC } from '@/utils/supabaseHelpers';
 
 interface ProductNotesProps {
   productId: string;
@@ -29,8 +29,7 @@ const ProductNotes = ({ productId, initialNotes = '' }: ProductNotesProps) => {
         p_content: notes
       };
       
-      // Add explicit type assertion to specify the expected return type
-      const { error } = await supabase.rpc('save_product_notes', params) as unknown as SaveProductNotesResponse;
+      const { error } = await callRPC<null, SaveProductNotesParams>('save_product_notes', params);
 
       if (error) throw error;
 

@@ -3,23 +3,22 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { useProducts } from '@/context/ProductsContext';
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { 
   GetProductNoteParams, 
-  GetProductNotesResponse, 
+  ProductNote,
   GetProductLinksParams,
-  GetProductLinksResponse,
   ProductLink,
   GetExternalSourcesParams,
-  GetExternalSourcesResponse,
-  ExternalSource
+  ExternalSource,
+  ProductExternalSource
 } from '@/types/supabase';
 import { Button } from '@/components/ui/button';
 import ProductHeader from '@/components/product-detail/ProductHeader';
 import ProductImage from '@/components/product-detail/ProductImage';
 import ProductInfo from '@/components/product-detail/ProductInfo';
 import ProductDetailSidebar from '@/components/product-detail/ProductDetailSidebar';
+import { callRPC } from '@/utils/supabaseHelpers';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -41,10 +40,10 @@ const ProductDetail = () => {
   const loadProductData = async () => {
     try {
       const notesParams: GetProductNoteParams = { p_product_id: id! };
-      const { data: notesData, error: notesError } = await supabase.rpc(
+      const { data: notesData, error: notesError } = await callRPC<ProductNote[], GetProductNoteParams>(
         'get_product_notes', 
         notesParams
-      ) as unknown as GetProductNotesResponse;
+      );
 
       if (notesError) {
         console.error('Error loading notes:', notesError);
@@ -55,10 +54,10 @@ const ProductDetail = () => {
       }
 
       const linksParams: GetProductLinksParams = { p_product_id: id! };
-      const { data: linksData, error: linksError } = await supabase.rpc(
+      const { data: linksData, error: linksError } = await callRPC<ProductLink[], GetProductLinksParams>(
         'get_product_links',
         linksParams
-      ) as unknown as GetProductLinksResponse;
+      );
 
       if (linksError) {
         console.error('Error loading links:', linksError);
@@ -69,10 +68,10 @@ const ProductDetail = () => {
       }
 
       const sourcesParams: GetExternalSourcesParams = { p_product_id: id! };
-      const { data: sourcesData, error: sourcesError } = await supabase.rpc(
+      const { data: sourcesData, error: sourcesError } = await callRPC<ProductExternalSource[], GetExternalSourcesParams>(
         'get_external_sources',
         sourcesParams
-      ) as unknown as GetExternalSourcesResponse;
+      );
 
       if (sourcesError) {
         console.error('Error loading sources:', sourcesError);
