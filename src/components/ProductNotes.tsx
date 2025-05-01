@@ -29,7 +29,8 @@ const ProductNotes = ({ productId, initialNotes = '' }: ProductNotesProps) => {
         p_content: notes
       };
       
-      const { error } = await supabase.rpc('save_product_notes', params) as SaveProductNotesResponse;
+      // Add explicit type assertion to specify the expected return type
+      const { error } = await supabase.rpc('save_product_notes', params) as unknown as SaveProductNotesResponse;
 
       if (error) throw error;
 

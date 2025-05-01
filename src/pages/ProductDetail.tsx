@@ -44,7 +44,7 @@ const ProductDetail = () => {
       const { data: notesData, error: notesError } = await supabase.rpc(
         'get_product_notes', 
         notesParams
-      ) as GetProductNotesResponse;
+      ) as unknown as GetProductNotesResponse;
 
       if (notesError) {
         console.error('Error loading notes:', notesError);
@@ -58,7 +58,7 @@ const ProductDetail = () => {
       const { data: linksData, error: linksError } = await supabase.rpc(
         'get_product_links',
         linksParams
-      ) as GetProductLinksResponse;
+      ) as unknown as GetProductLinksResponse;
 
       if (linksError) {
         console.error('Error loading links:', linksError);
@@ -72,7 +72,7 @@ const ProductDetail = () => {
       const { data: sourcesData, error: sourcesError } = await supabase.rpc(
         'get_external_sources',
         sourcesParams
-      ) as GetExternalSourcesResponse;
+      ) as unknown as GetExternalSourcesResponse;
 
       if (sourcesError) {
         console.error('Error loading sources:', sourcesError);
