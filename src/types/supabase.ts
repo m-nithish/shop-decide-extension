@@ -36,6 +36,16 @@ export type GetProductLinksParams = {
   p_product_id: string;
 };
 
+export type SaveProductLinkParams = {
+  p_product_id: string;
+  p_source_name: string;
+  p_product_name: string;
+  p_url: string;
+  p_price?: number;
+  p_rating?: number;
+  p_review_count?: number;
+};
+
 export type ProductLink = {
   id: string;
   product_id: string;
@@ -57,6 +67,13 @@ export type GetProductLinksResponse = {
 // External Sources types
 export type GetExternalSourcesParams = {
   p_product_id: string;
+};
+
+export type SaveExternalSourceParams = {
+  p_product_id: string;
+  p_title: string;
+  p_url: string;
+  p_source_type: 'youtube' | 'pinterest' | 'other';
 };
 
 export type ProductExternalSource = {

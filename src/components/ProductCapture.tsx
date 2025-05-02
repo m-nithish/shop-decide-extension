@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,10 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useProducts } from '@/context/ProductsContext';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { callRPC } from '@/utils/supabaseHelpers';
+import { SaveProductLinkParams } from '@/types/supabase';
 
 const ProductCapture: React.FC = () => {
   const navigate = useNavigate();
   const { collections, addProduct } = useProducts();
+  const { user } = useAuth();
+  const { toast } = useToast();
   
   const [formData, setFormData] = useState({
     title: '',
@@ -35,16 +40,45 @@ const ProductCapture: React.FC = () => {
     setFormData(prev => ({ ...prev, collectionId: value }));
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate the product capture process
-    setTimeout(() => {
-      addProduct(formData as Omit<Product, 'id' | 'dateAdded'>);
+    try {
+      // Add the product to local state
+      const newProduct = addProduct(formData as Omit<Product, 'id' | 'dateAdded'>);
+      
+      // If user is logged in and product URL is provided, save it as a product link
+      if (user && formData.productUrl && newProduct) {
+        const params: SaveProductLinkParams = {
+          p_product_id: newProduct.id,
+          p_source_name: formData.sourceName || 'Unknown',
+          p_product_name: formData.title,
+          p_url: formData.productUrl,
+          p_price: parseFloat(formData.price) || 0,
+          p_rating: 0,
+          p_review_count: 0
+        };
+        
+        await callRPC<string, SaveProductLinkParams>('save_product_link', params);
+        
+        toast({
+          title: 'Product saved',
+          description: 'Product has been saved with link information.'
+        });
+      }
+      
       setIsLoading(false);
       navigate('/');
-    }, 1000);
+    } catch (error) {
+      console.error('Error saving product:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to save product information.'
+      });
+      setIsLoading(false);
+    }
   };
   
   return (

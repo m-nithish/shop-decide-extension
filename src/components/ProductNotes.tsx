@@ -48,6 +48,21 @@ const ProductNotes = ({ productId, initialNotes = '' }: ProductNotesProps) => {
     }
   };
 
+  if (!user) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>My Notes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-500 text-center py-4">
+            Please sign in to add notes.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>

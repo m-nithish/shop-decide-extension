@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
 
 interface ProductLink {
   id: string;
@@ -28,11 +29,15 @@ interface ProductLinksTableProps {
 }
 
 const ProductLinksTable = ({ links, onAddLink }: ProductLinksTableProps) => {
+  const { user } = useAuth();
+  
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Product Links</CardTitle>
-        <Button onClick={onAddLink}>Add Link</Button>
+        {user && onAddLink && (
+          <Button onClick={onAddLink}>Add Link</Button>
+        )}
       </CardHeader>
       <CardContent>
         <Table>

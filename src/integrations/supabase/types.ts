@@ -9,6 +9,99 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      external_sources: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          source_type: string
+          title: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          source_type: string
+          title: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          source_type?: string
+          title?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      product_links: {
+        Row: {
+          created_at: string
+          id: string
+          price: number | null
+          product_id: string
+          product_name: string
+          rating: number | null
+          review_count: number | null
+          source_name: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          price?: number | null
+          product_id: string
+          product_name: string
+          rating?: number | null
+          review_count?: number | null
+          source_name: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          price?: number | null
+          product_id?: string
+          product_name?: string
+          rating?: number | null
+          review_count?: number | null
+          source_name?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      product_notes: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          product_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          product_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          product_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -38,7 +131,76 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_external_source: {
+        Args: { p_source_id: string }
+        Returns: boolean
+      }
+      delete_product_link: {
+        Args: { p_link_id: string }
+        Returns: boolean
+      }
+      get_external_sources: {
+        Args: { p_product_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          product_id: string
+          source_type: string
+          title: string
+          url: string
+        }[]
+      }
+      get_product_links: {
+        Args: { p_product_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          price: number | null
+          product_id: string
+          product_name: string
+          rating: number | null
+          review_count: number | null
+          source_name: string
+          updated_at: string
+          url: string
+        }[]
+      }
+      get_product_notes: {
+        Args: { p_product_id: string }
+        Returns: {
+          content: string | null
+          created_at: string
+          id: string
+          product_id: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
+      save_external_source: {
+        Args: {
+          p_product_id: string
+          p_title: string
+          p_url: string
+          p_source_type: string
+        }
+        Returns: string
+      }
+      save_product_link: {
+        Args: {
+          p_product_id: string
+          p_source_name: string
+          p_product_name: string
+          p_url: string
+          p_price?: number
+          p_rating?: number
+          p_review_count?: number
+        }
+        Returns: string
+      }
+      save_product_notes: {
+        Args: { p_product_id: string; p_user_id: string; p_content: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

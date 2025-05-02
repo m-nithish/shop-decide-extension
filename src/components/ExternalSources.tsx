@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Youtube, ExternalLink, Image } from 'lucide-react';
 import { ExternalSource } from '@/types/supabase';
+import { useAuth } from '@/context/AuthContext';
 
 interface ExternalSourcesProps {
   sources: ExternalSource[];
@@ -12,6 +13,8 @@ interface ExternalSourcesProps {
 }
 
 const ExternalSources = ({ sources, onAddSource }: ExternalSourcesProps) => {
+  const { user } = useAuth();
+  
   const getSourceIcon = (type: string) => {
     switch (type) {
       case 'youtube':
@@ -27,7 +30,9 @@ const ExternalSources = ({ sources, onAddSource }: ExternalSourcesProps) => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>External Sources</CardTitle>
-        <Button onClick={onAddSource}>Add Source</Button>
+        {user && onAddSource && (
+          <Button onClick={onAddSource}>Add Source</Button>
+        )}
       </CardHeader>
       <CardContent>
         <div className="grid gap-4">
