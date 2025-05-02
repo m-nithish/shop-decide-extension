@@ -97,3 +97,37 @@ export type ExternalSource = {
   url: string;
   source_type: 'youtube' | 'pinterest' | 'other';
 };
+
+// Collection types
+export type SupabaseCollection = {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  color: string;
+  created_at: string;
+};
+
+export type CreateCollectionParams = {
+  p_name: string;
+  p_description: string | null;
+  p_color: string;
+};
+
+export type AddProductToCollectionParams = {
+  p_product_id: string;
+  p_collection_id: string;
+};
+
+export type RemoveProductFromCollectionParams = {
+  p_product_id: string;
+  p_collection_id: string;
+};
+
+export type GetProductsByCollectionParams = {
+  p_collection_id: string;
+};
+
+export type ProductCollectionItem = {
+  product_id: string;
+};

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,18 +7,24 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProducts } from '@/context/ProductsContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Product } from '@/types';
 import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { callRPC } from '@/utils/supabaseHelpers';
 import { SaveProductLinkParams } from '@/types/supabase';
+import { addProductToCollection } from '@/services/collectionService';
 
 const ProductCapture: React.FC = () => {
   const navigate = useNavigate();
-  const { collections, addProduct } = useProducts();
+  const location = useLocation();
+  const { collections, addProduct, fetchUserCollections } = useProducts();
   const { user } = useAuth();
   const { toast } = useToast();
+  
+  // Get collectionId from URL query params if available
+  const queryParams = new URLSearchParams(location.search);
+  const preselectedCollectionId = queryParams.get('collectionId') || '';
   
   const [formData, setFormData] = useState({
     title: '',
@@ -27,10 +33,17 @@ const ProductCapture: React.FC = () => {
     imageUrl: '',
     productUrl: '',
     sourceName: '',
-    collectionId: ''
+    collectionId: preselectedCollectionId
   });
   
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Load user collections if authenticated
+  useEffect(() => {
+    if (user) {
+      fetchUserCollections();
+    }
+  }, [user, fetchUserCollections]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -49,7 +62,7 @@ const ProductCapture: React.FC = () => {
       // Add the product to local state and get the new product object
       const newProduct = addProduct(formData as Omit<Product, 'id' | 'dateAdded'>);
       
-      // If user is logged in and product URL is provided, save it as a product link
+      // Handle product links in Supabase if user is logged in
       if (user && formData.productUrl && newProduct) {
         const params: SaveProductLinkParams = {
           p_product_id: newProduct.id,
@@ -62,15 +75,36 @@ const ProductCapture: React.FC = () => {
         };
         
         await callRPC<string, SaveProductLinkParams>('save_product_link', params);
-        
-        toast({
-          title: 'Product saved',
-          description: 'Product has been saved with link information.'
-        });
       }
       
-      setIsLoading(false);
-      navigate('/');
+      // Add product to collection in Supabase if user is logged in and collection is selected
+      if (user && formData.collectionId && newProduct) {
+        const { error } = await addProductToCollection({
+          p_product_id: newProduct.id,
+          p_collection_id: formData.collectionId
+        });
+        
+        if (error) {
+          console.error('Error adding product to collection:', error);
+          toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Failed to add product to collection.'
+          });
+        }
+      }
+      
+      toast({
+        title: 'Product saved',
+        description: 'Product has been saved successfully.'
+      });
+      
+      // Navigate to collection detail page if coming from there
+      if (preselectedCollectionId) {
+        navigate(`/collection/${preselectedCollectionId}`);
+      } else {
+        navigate('/');
+      }
     } catch (error) {
       console.error('Error saving product:', error);
       toast({
@@ -78,6 +112,7 @@ const ProductCapture: React.FC = () => {
         title: 'Error',
         description: 'Failed to save product information.'
       });
+    } finally {
       setIsLoading(false);
     }
   };

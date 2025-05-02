@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useProducts } from '@/context/ProductsContext';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 const colors = [
   '#8B5CF6', // Purple
@@ -22,6 +23,7 @@ const colors = [
 const CollectionForm: React.FC = () => {
   const navigate = useNavigate();
   const { addCollection } = useProducts();
+  const { user } = useAuth();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -40,15 +42,18 @@ const CollectionForm: React.FC = () => {
     setFormData(prev => ({ ...prev, color }));
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    setTimeout(() => {
-      addCollection(formData);
+    try {
+      await addCollection(formData);
       setIsLoading(false);
       navigate('/collections');
-    }, 500);
+    } catch (error) {
+      console.error('Error creating collection:', error);
+      setIsLoading(false);
+    }
   };
   
   return (

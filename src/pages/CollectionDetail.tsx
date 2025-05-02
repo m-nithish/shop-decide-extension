@@ -1,18 +1,41 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Plus, Trash } from 'lucide-react';
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
 import { useProducts } from '@/context/ProductsContext';
+import { useAuth } from '@/context/AuthContext';
+import { Product } from '@/types';
 
 const CollectionDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { collections, getProductsByCollection, deleteCollection } = useProducts();
+  const { user } = useAuth();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   const collection = collections.find(c => c.id === id);
+  
+  useEffect(() => {
+    const loadProducts = async () => {
+      if (id) {
+        setIsLoading(true);
+        try {
+          const collectionProducts = await getProductsByCollection(id);
+          setProducts(collectionProducts);
+        } catch (error) {
+          console.error('Error loading products:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    loadProducts();
+  }, [id, getProductsByCollection]);
   
   if (!collection) {
     return (
@@ -29,11 +52,10 @@ const CollectionDetail = () => {
     );
   }
   
-  const products = getProductsByCollection(collection.id);
   const formattedDate = new Date(collection.createdAt).toLocaleDateString();
   
-  const handleDelete = () => {
-    deleteCollection(collection.id);
+  const handleDelete = async () => {
+    await deleteCollection(collection.id);
     navigate('/collections');
   };
   
@@ -64,7 +86,10 @@ const CollectionDetail = () => {
             </div>
             
             <div className="flex gap-2">
-              <Link to="/add-product">
+              <Link to={{
+                pathname: "/add-product",
+                search: id ? `?collectionId=${id}` : ""
+              }}>
                 <Button className="bg-theme-purple hover:bg-theme-purple/90">
                   <Plus className="h-4 w-4 mr-2" /> Add Product
                 </Button>
@@ -83,7 +108,11 @@ const CollectionDetail = () => {
           )}
         </div>
         
-        {products.length === 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-theme-purple"></div>
+          </div>
+        ) : products.length === 0 ? (
           <div className="bg-white rounded-lg border border-dashed border-gray-300 p-12 text-center">
             <div className="mx-auto w-16 h-16 bg-theme-lavender rounded-full flex items-center justify-center mb-4">
               <Plus className="h-8 w-8 text-theme-purple" />
