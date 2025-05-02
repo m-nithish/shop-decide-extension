@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, Collection } from '../types';
 import { products as initialProducts, collections as initialCollections } from '../utils/mockData';
@@ -21,7 +20,7 @@ interface ProductsContextProps {
   deleteProduct: (id: string) => void;
   addCollection: (collection: Omit<Collection, 'id' | 'createdAt' | 'productCount'>) => void;
   deleteCollection: (id: string) => void;
-  getProductsByCollection: (collectionId: string) => Product[];
+  getProductsByCollection: (collectionId: string) => Promise<Product[]>; // Updated to return Promise<Product[]>
   getCollection: (collectionId: string) => Collection | undefined;
   fetchUserCollections: () => Promise<void>;
   isLoading: boolean;
