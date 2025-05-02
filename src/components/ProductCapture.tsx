@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -45,11 +46,11 @@ const ProductCapture: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // Add the product to local state
+      // Add the product to local state and get the new product object
       const newProduct = addProduct(formData as Omit<Product, 'id' | 'dateAdded'>);
       
       // If user is logged in and product URL is provided, save it as a product link
-      if (user && formData.productUrl && newProduct) {
+      if (user && formData.productUrl && newProduct && newProduct.id) {
         const params: SaveProductLinkParams = {
           p_product_id: newProduct.id,
           p_source_name: formData.sourceName || 'Unknown',
