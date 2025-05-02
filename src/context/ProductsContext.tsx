@@ -7,7 +7,7 @@ import { useToast } from '@/components/ui/use-toast';
 interface ProductsContextProps {
   products: Product[];
   collections: Collection[];
-  addProduct: (product: Omit<Product, 'id' | 'dateAdded'>) => void;
+  addProduct: (product: Omit<Product, 'id' | 'dateAdded'>) => Product;
   deleteProduct: (id: string) => void;
   addCollection: (collection: Omit<Collection, 'id' | 'createdAt' | 'productCount'>) => void;
   deleteCollection: (id: string) => void;
@@ -54,6 +54,8 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       title: "Product Added",
       description: "Product has been added to your collection.",
     });
+    
+    return newProduct; // Return the new product object
   };
 
   const deleteProduct = (id: string) => {

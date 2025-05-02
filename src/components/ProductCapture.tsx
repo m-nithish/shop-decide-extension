@@ -50,7 +50,7 @@ const ProductCapture: React.FC = () => {
       const newProduct = addProduct(formData as Omit<Product, 'id' | 'dateAdded'>);
       
       // If user is logged in and product URL is provided, save it as a product link
-      if (user && formData.productUrl && newProduct && newProduct.id) {
+      if (user && formData.productUrl && newProduct) {
         const params: SaveProductLinkParams = {
           p_product_id: newProduct.id,
           p_source_name: formData.sourceName || 'Unknown',
