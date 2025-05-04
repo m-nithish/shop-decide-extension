@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -51,12 +52,12 @@ const CollectionForm: React.FC = () => {
       const newCollection = await addCollection(formData);
       setIsLoading(false);
       
-      // Fixed: Redirect to the new collection's detail page instead of /collections
       if (newCollection && newCollection.id) {
         toast({
           title: "Collection Created",
           description: `${formData.name} collection has been created.`
         });
+        // Make sure we navigate to the correct path
         navigate(`/collection/${newCollection.id}`);
       } else {
         // Fallback if for some reason we don't have the collection ID

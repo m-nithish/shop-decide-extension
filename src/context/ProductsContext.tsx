@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, Collection } from '../types';
 import { products as initialProducts, collections as initialCollections } from '../utils/mockData';
@@ -12,15 +13,16 @@ import {
   getProductsByCollection as getProductsByCollectionService
 } from '@/services/collectionService';
 import { SupabaseCollection } from '@/types/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProductsContextProps {
   products: Product[];
   collections: Collection[];
-  addProduct: (product: Omit<Product, 'id' | 'dateAdded'>) => Product;
+  addProduct: (product: Omit<Product, 'id' | 'dateAdded'>) => Promise<Product | undefined>;
   deleteProduct: (id: string) => void;
   addCollection: (collection: Omit<Collection, 'id' | 'createdAt' | 'productCount'>) => Promise<Collection | undefined>;
-  deleteCollection: (id: string) => void;
-  getProductsByCollection: (collectionId: string) => Promise<Product[]>; // Updated to return Promise<Product[]>
+  deleteCollection: (id: string) => Promise<void>;
+  getProductsByCollection: (collectionId: string) => Promise<Product[]>;
   getCollection: (collectionId: string) => Collection | undefined;
   fetchUserCollections: () => Promise<void>;
   isLoading: boolean;
@@ -98,20 +100,83 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  const addProduct = (product: Omit<Product, 'id' | 'dateAdded'>) => {
-    const newProduct: Product = {
-      ...product,
-      id: `product-${Date.now()}`,
-      dateAdded: new Date().toISOString()
-    };
-    
-    setProducts([...products, newProduct]);
-    toast({
-      title: "Product Added",
-      description: "Product has been added to your collection.",
-    });
-    
-    return newProduct; // Return the new product object
+  const addProduct = async (product: Omit<Product, 'id' | 'dateAdded'>): Promise<Product | undefined> => {
+    try {
+      if (user) {
+        // If authenticated, create product in Supabase
+        const { data, error } = await supabase.rpc('create_product', {
+          p_user_id: user.id,
+          p_title: product.title,
+          p_description: product.description,
+          p_price: product.price,
+          p_image_url: product.imageUrl,
+          p_product_url: product.productUrl,
+          p_source_name: product.sourceName
+        });
+        
+        if (error) {
+          console.error('Error creating product:', error);
+          toast({
+            variant: 'destructive',
+            title: "Failed to create product",
+            description: "There was an error creating your product.",
+          });
+          return undefined;
+        }
+        
+        if (data) {
+          // Get the new product ID
+          const productId = data;
+          
+          // Create a product object with the returned ID
+          const newProduct: Product = {
+            ...product,
+            id: productId,
+            dateAdded: new Date().toISOString()
+          };
+          
+          // Add to collection if specified
+          if (product.collectionId) {
+            await addProductToCollection({
+              p_product_id: productId,
+              p_collection_id: product.collectionId
+            });
+          }
+          
+          setProducts([...products, newProduct]);
+          
+          toast({
+            title: "Product Added",
+            description: "Product has been added to your collection.",
+          });
+          
+          return newProduct;
+        }
+      } else {
+        // Not authenticated, use local storage
+        const newProduct: Product = {
+          ...product,
+          id: `product-${Date.now()}`,
+          dateAdded: new Date().toISOString()
+        };
+        
+        setProducts([...products, newProduct]);
+        toast({
+          title: "Product Added",
+          description: "Product has been added to your collection.",
+        });
+        
+        return newProduct;
+      }
+    } catch (err) {
+      console.error('Error in addProduct:', err);
+      toast({
+        variant: 'destructive',
+        title: "Failed to create product",
+        description: "An unexpected error occurred.",
+      });
+      return undefined;
+    }
   };
 
   const deleteProduct = (id: string) => {
@@ -151,9 +216,21 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             description: "New collection has been created.",
           });
           
-          // Find the newly created collection and return it
-          const newCollection = collections.find(c => c.name === collection.name);
-          return newCollection;
+          // Find and return the newly created collection
+          const newCollections = await getUserCollections();
+          if (newCollections.data) {
+            const newCollection = newCollections.data.find(c => c.name === collection.name);
+            if (newCollection) {
+              return {
+                id: newCollection.id,
+                name: newCollection.name,
+                description: newCollection.description || '',
+                createdAt: newCollection.created_at,
+                color: newCollection.color,
+                productCount: 0
+              };
+            }
+          }
         }
       } catch (err) {
         console.error('Error in addCollection:', err);
@@ -220,7 +297,7 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  const getProductsByCollection = async (collectionId: string) => {
+  const getProductsByCollection = async (collectionId: string): Promise<Product[]> => {
     if (user) {
       try {
         // Get product IDs for this collection from Supabase

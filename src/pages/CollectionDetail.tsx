@@ -56,7 +56,8 @@ const CollectionDetail = () => {
   
   const handleDelete = async () => {
     await deleteCollection(collection.id);
-    navigate('/collections');
+    // Navigate to the collections page instead of using back navigation
+    navigate('/'); // Navigate to homepage which has the collections tab
   };
   
   return (
@@ -119,7 +120,7 @@ const CollectionDetail = () => {
             </div>
             <h3 className="text-lg font-medium mb-2">No products in this collection</h3>
             <p className="text-gray-500 mb-6">Start adding products to this collection</p>
-            <Link to="/add-product">
+            <Link to={`/add-product?collectionId=${id}`}>
               <Button className="bg-theme-purple hover:bg-theme-purple/90">
                 Add Product
               </Button>

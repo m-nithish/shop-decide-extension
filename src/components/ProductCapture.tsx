@@ -11,9 +11,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Product } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
-import { callRPC } from '@/utils/supabaseHelpers';
-import { SaveProductLinkParams } from '@/types/supabase';
-import { addProductToCollection } from '@/services/collectionService';
 
 const ProductCapture: React.FC = () => {
   const navigate = useNavigate();
@@ -59,51 +56,19 @@ const ProductCapture: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // Add the product to local state and get the new product object
-      const newProduct = addProduct(formData as Omit<Product, 'id' | 'dateAdded'>);
+      // Add the product and get the new product object
+      const newProduct = await addProduct(formData as Omit<Product, 'id' | 'dateAdded'>);
       
-      // Handle product links in Supabase if user is logged in
-      if (user && formData.productUrl && newProduct) {
-        const params: SaveProductLinkParams = {
-          p_product_id: newProduct.id,
-          p_source_name: formData.sourceName || 'Unknown',
-          p_product_name: formData.title,
-          p_url: formData.productUrl,
-          p_price: parseFloat(formData.price) || 0,
-          p_rating: 0,
-          p_review_count: 0
-        };
-        
-        await callRPC<string, SaveProductLinkParams>('save_product_link', params);
-      }
-      
-      // Add product to collection in Supabase if user is logged in and collection is selected
-      if (user && formData.collectionId && newProduct) {
-        const { error } = await addProductToCollection({
-          p_product_id: newProduct.id,
-          p_collection_id: formData.collectionId
+      if (newProduct) {
+        toast({
+          title: 'Product saved',
+          description: 'Product has been saved successfully.'
         });
         
-        if (error) {
-          console.error('Error adding product to collection:', error);
-          toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Failed to add product to collection.'
-          });
-        }
-      }
-      
-      toast({
-        title: 'Product saved',
-        description: 'Product has been saved successfully.'
-      });
-      
-      // Navigate to collection detail page if coming from there
-      if (preselectedCollectionId) {
-        navigate(`/collection/${preselectedCollectionId}`);
+        // Navigate to product detail page
+        navigate(`/product/${newProduct.id}`);
       } else {
-        navigate('/');
+        throw new Error('Failed to create product');
       }
     } catch (error) {
       console.error('Error saving product:', error);
@@ -127,26 +92,6 @@ const ProductCapture: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="productUrl">Product URL</Label>
-            <div className="flex gap-2">
-              <Input
-                id="productUrl"
-                name="productUrl"
-                placeholder="https://example.com/product"
-                value={formData.productUrl}
-                onChange={handleChange}
-                required
-              />
-              <Button variant="outline" type="button" disabled>
-                Auto-fill
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              In a real extension, this would extract product data automatically.
-            </p>
-          </div>
-          
           <div className="space-y-2">
             <Label htmlFor="title">Product Title</Label>
             <Input
@@ -192,6 +137,17 @@ const ProductCapture: React.FC = () => {
                 onChange={handleChange}
               />
             </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="productUrl">Product URL</Label>
+            <Input
+              id="productUrl"
+              name="productUrl"
+              placeholder="https://example.com/product"
+              value={formData.productUrl}
+              onChange={handleChange}
+            />
           </div>
           
           <div className="space-y-2">

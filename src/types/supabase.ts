@@ -1,3 +1,4 @@
+
 // Define request parameter types and response types for all our Supabase RPC functions
 
 // Product Notes types
@@ -131,4 +132,41 @@ export type GetProductsByCollectionParams = {
 
 export type ProductCollectionItem = {
   product_id: string;
+};
+
+// Product types
+export type SupabaseProduct = {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  price: string | null;
+  image_url: string | null;
+  product_url: string | null;
+  source_name: string | null;
+  created_at: string;
+};
+
+export type CreateProductParams = {
+  p_user_id: string;
+  p_title: string;
+  p_description?: string | null;
+  p_price?: string | null;
+  p_image_url?: string | null;
+  p_product_url?: string | null;
+  p_source_name?: string | null;
+};
+
+export type UpdateProductParams = {
+  p_product_id: string;
+  p_title: string;
+  p_description: string | null;
+  p_price: string | null;
+  p_image_url: string | null;
+  p_product_url: string | null;
+  p_source_name: string | null;
+};
+
+export type DeleteProductParams = {
+  p_product_id: string;
 };
