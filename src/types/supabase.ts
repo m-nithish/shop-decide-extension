@@ -1,4 +1,3 @@
-
 // Define request parameter types and response types for all our Supabase RPC functions
 
 // Product Notes types
@@ -93,9 +92,11 @@ export type GetExternalSourcesResponse = {
 // Define a single consistent ExternalSource type for both components to use
 export type ExternalSource = {
   id: string;
+  product_id?: string;  // Make this optional for flexibility
   title: string;
   url: string;
-  source_type: 'youtube' | 'pinterest' | 'other';
+  source_type: 'youtube' | 'pinterest' | 'other';  // Ensure this is strictly typed
+  created_at?: string;  // Make optional since it might not be available when creating
 };
 
 // Collection types

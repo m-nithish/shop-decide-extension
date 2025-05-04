@@ -26,7 +26,7 @@ const AddSourceDialog = ({ productId, open, onOpenChange, onSourceAdded }: AddSo
   const [formData, setFormData] = useState({
     title: '',
     url: '',
-    sourceType: 'website',
+    sourceType: 'other' as 'youtube' | 'pinterest' | 'other', // Fix: Explicitly type as allowed values
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,7 +38,12 @@ const AddSourceDialog = ({ productId, open, onOpenChange, onSourceAdded }: AddSo
   };
   
   const handleSourceTypeChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, sourceType: value }));
+    // Fix: Ensure we only accept valid source types
+    const validSourceType = (value === 'youtube' || value === 'pinterest' || value === 'other') 
+      ? value 
+      : 'other';
+      
+    setFormData((prev) => ({ ...prev, sourceType: validSourceType as 'youtube' | 'pinterest' | 'other' }));
   };
   
   const handleSubmit = async (e: React.FormEvent) => {
@@ -80,7 +85,7 @@ const AddSourceDialog = ({ productId, open, onOpenChange, onSourceAdded }: AddSo
         setFormData({
           title: '',
           url: '',
-          sourceType: 'website',
+          sourceType: 'other',
         });
         
         // Call onSourceAdded callback if provided
@@ -141,11 +146,9 @@ const AddSourceDialog = ({ productId, open, onOpenChange, onSourceAdded }: AddSo
                   <SelectValue placeholder="Select a source type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="website">Website</SelectItem>
+                  <SelectItem value="other">Website</SelectItem>
                   <SelectItem value="youtube">YouTube</SelectItem>
                   <SelectItem value="pinterest">Pinterest</SelectItem>
-                  <SelectItem value="review">Review</SelectItem>
-                  <SelectItem value="blog">Blog</SelectItem>
                 </SelectContent>
               </Select>
             </div>
