@@ -1,161 +1,164 @@
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
 import { callRPC } from '@/utils/supabaseHelpers';
-import { SaveProductLinkParams } from '@/types/supabase';
+import { useToast } from '@/hooks/use-toast';
+import { ProductLink } from '@/types/supabase';
 
 interface AddLinkDialogProps {
+  productId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  productId: string;
+  onLinkAdded?: (link: ProductLink) => void;
 }
 
-const AddLinkDialog = ({ open, onOpenChange, productId }: AddLinkDialogProps) => {
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const AddLinkDialog = ({ productId, open, onOpenChange, onLinkAdded }: AddLinkDialogProps) => {
   const [formData, setFormData] = useState({
     sourceName: '',
     productName: '',
     url: '',
     price: '',
-    rating: '',
-    reviewCount: ''
   });
-
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
+    
     try {
-      const params: SaveProductLinkParams = {
+      const { data, error } = await callRPC<string, any>('save_product_link', {
         p_product_id: productId,
         p_source_name: formData.sourceName,
         p_product_name: formData.productName,
         p_url: formData.url,
         p_price: parseFloat(formData.price) || 0,
-        p_rating: parseFloat(formData.rating) || 0,
-        p_review_count: parseInt(formData.reviewCount) || 0
-      };
-
-      const { error } = await callRPC<string, SaveProductLinkParams>('save_product_link', params);
-
-      if (error) throw error;
-
-      toast({
-        title: 'Link added',
-        description: 'Product link has been added successfully.'
       });
-
-      // Reset form and close dialog
-      setFormData({
-        sourceName: '',
-        productName: '',
-        url: '',
-        price: '',
-        rating: '',
-        reviewCount: ''
-      });
-      onOpenChange(false);
       
-      // Reload the page to show the new link
-      window.location.reload();
+      if (error) {
+        console.error('Error adding link:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to add the link. Please try again.',
+        });
+      } else if (data) {
+        toast({
+          title: 'Link Added',
+          description: 'Price comparison link has been added.',
+        });
+        
+        // Create a complete link object to provide back to the parent
+        const newLink: ProductLink = {
+          id: data,
+          product_id: productId,
+          source_name: formData.sourceName,
+          product_name: formData.productName,
+          url: formData.url,
+          price: parseFloat(formData.price) || 0,
+          rating: 0,
+          review_count: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        
+        // Clear the form
+        setFormData({
+          sourceName: '',
+          productName: '',
+          url: '',
+          price: '',
+        });
+        
+        // Call onLinkAdded callback if provided
+        if (onLinkAdded) {
+          onLinkAdded(newLink);
+        }
+        
+        // Close the dialog
+        onOpenChange(false);
+      }
     } catch (error) {
-      console.error('Error adding link:', error);
+      console.error('Error in handleSubmit:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to add product link. Please try again.'
+        description: 'An unexpected error occurred.',
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Add Product Link</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="sourceName">Source Name</Label>
-            <Input
-              id="sourceName"
-              name="sourceName"
-              placeholder="Amazon, eBay, etc."
-              value={formData.sourceName}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="productName">Product Name</Label>
-            <Input
-              id="productName"
-              name="productName"
-              placeholder="Product name as listed on the site"
-              value={formData.productName}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="url">URL</Label>
-            <Input
-              id="url"
-              name="url"
-              placeholder="https://example.com/product"
-              value={formData.url}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Add Price Comparison Link</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="sourceName">Source Name</Label>
+              <Input
+                id="sourceName"
+                name="sourceName"
+                placeholder="e.g., Amazon, eBay, Walmart"
+                value={formData.sourceName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="productName">Product Name</Label>
+              <Input
+                id="productName"
+                name="productName"
+                placeholder="Product name on the source website"
+                value={formData.productName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="url">URL</Label>
+              <Input
+                id="url"
+                name="url"
+                placeholder="https://..."
+                value={formData.url}
+                onChange={handleChange}
+                required
+                type="url"
+              />
+            </div>
+            <div className="grid gap-2">
               <Label htmlFor="price">Price</Label>
               <Input
                 id="price"
                 name="price"
-                type="number"
-                step="0.01"
-                placeholder="99.99"
+                placeholder="0.00"
                 value={formData.price}
                 onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="rating">Rating</Label>
-              <Input
-                id="rating"
-                name="rating"
                 type="number"
-                step="0.1"
+                step="0.01"
                 min="0"
-                max="5"
-                placeholder="4.5"
-                value={formData.rating}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="reviewCount">Reviews</Label>
-              <Input
-                id="reviewCount"
-                name="reviewCount"
-                type="number"
-                placeholder="42"
-                value={formData.reviewCount}
-                onChange={handleChange}
+                required
               />
             </div>
           </div>

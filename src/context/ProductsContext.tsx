@@ -18,7 +18,7 @@ interface ProductsContextProps {
   collections: Collection[];
   addProduct: (product: Omit<Product, 'id' | 'dateAdded'>) => Product;
   deleteProduct: (id: string) => void;
-  addCollection: (collection: Omit<Collection, 'id' | 'createdAt' | 'productCount'>) => void;
+  addCollection: (collection: Omit<Collection, 'id' | 'createdAt' | 'productCount'>) => Promise<Collection | undefined>;
   deleteCollection: (id: string) => void;
   getProductsByCollection: (collectionId: string) => Promise<Product[]>; // Updated to return Promise<Product[]>
   getCollection: (collectionId: string) => Collection | undefined;
@@ -139,7 +139,7 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             title: "Failed to create collection",
             description: "There was an error creating your collection.",
           });
-          return;
+          return undefined;
         }
         
         if (data) {
@@ -150,9 +150,14 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             title: "Collection Created",
             description: "New collection has been created.",
           });
+          
+          // Find the newly created collection and return it
+          const newCollection = collections.find(c => c.name === collection.name);
+          return newCollection;
         }
       } catch (err) {
         console.error('Error in addCollection:', err);
+        return undefined;
       }
     } else {
       // Use local storage if not authenticated
@@ -168,6 +173,8 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         title: "Collection Created",
         description: "New collection has been created.",
       });
+      
+      return newCollection;
     }
   };
 

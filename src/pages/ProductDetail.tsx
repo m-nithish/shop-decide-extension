@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -96,6 +95,16 @@ const ProductDetail = () => {
     }
   };
 
+  // Handle product link updates
+  const handleProductLinksChange = (updatedLinks: ProductLink[]) => {
+    setProductLinks(updatedLinks);
+  };
+
+  // Handle external sources updates
+  const handleExternalSourcesChange = (updatedSources: ExternalSource[]) => {
+    setExternalSources(updatedSources);
+  };
+
   if (!product) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -139,6 +148,8 @@ const ProductDetail = () => {
             notes={notes}
             productLinks={productLinks}
             externalSources={externalSources}
+            onProductLinksChange={handleProductLinksChange}
+            onExternalSourcesChange={handleExternalSourcesChange}
           />
         </div>
       </main>

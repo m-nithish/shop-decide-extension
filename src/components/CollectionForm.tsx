@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useProducts } from '@/context/ProductsContext';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/components/ui/use-toast';
 
 const colors = [
   '#8B5CF6', // Purple
@@ -24,6 +24,7 @@ const CollectionForm: React.FC = () => {
   const navigate = useNavigate();
   const { addCollection } = useProducts();
   const { user } = useAuth();
+  const { toast } = useToast();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -47,11 +48,27 @@ const CollectionForm: React.FC = () => {
     setIsLoading(true);
     
     try {
-      await addCollection(formData);
+      const newCollection = await addCollection(formData);
       setIsLoading(false);
-      navigate('/collections');
+      
+      // Fixed: Redirect to the new collection's detail page instead of /collections
+      if (newCollection && newCollection.id) {
+        toast({
+          title: "Collection Created",
+          description: `${formData.name} collection has been created.`
+        });
+        navigate(`/collection/${newCollection.id}`);
+      } else {
+        // Fallback if for some reason we don't have the collection ID
+        navigate('/');
+      }
     } catch (error) {
       console.error('Error creating collection:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create collection. Please try again."
+      });
       setIsLoading(false);
     }
   };
@@ -108,7 +125,7 @@ const CollectionForm: React.FC = () => {
           <Button
             variant="outline"
             type="button"
-            onClick={() => navigate('/collections')}
+            onClick={() => navigate('/')}
           >
             Cancel
           </Button>

@@ -1,9 +1,11 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Collection, Product } from '@/types';
+import React, { useState } from 'react';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ExternalLink, Edit } from 'lucide-react';
+import { Product, Collection } from '@/types';
+import { useProducts } from '@/context/ProductsContext';
+import ProductEditForm from './ProductEditForm';
 
 interface ProductInfoProps {
   product: Product;
@@ -11,43 +13,104 @@ interface ProductInfoProps {
 }
 
 const ProductInfo = ({ product, collection }: ProductInfoProps) => {
-  const formattedDate = new Date(product.dateAdded).toLocaleDateString();
+  const [isEditing, setIsEditing] = useState(false);
+  const { addProduct, deleteProduct } = useProducts();
+
+  const handleSaveEdit = (updatedProduct: Product) => {
+    // Delete old product and add the updated one
+    // This is a workaround since we don't have a direct update method
+    deleteProduct(product.id);
+    addProduct({
+      title: updatedProduct.title,
+      description: updatedProduct.description,
+      price: updatedProduct.price,
+      imageUrl: updatedProduct.imageUrl,
+      productUrl: updatedProduct.productUrl,
+      sourceName: updatedProduct.sourceName,
+      collectionId: updatedProduct.collectionId,
+    });
+    
+    setIsEditing(false);
+  };
+  
+  if (isEditing) {
+    return (
+      <ProductEditForm
+        product={product}
+        onSave={handleSaveEdit}
+        onCancel={() => setIsEditing(false)}
+      />
+    );
+  }
 
   return (
-    <Card className="mb-8">
-      <CardHeader>
-        <CardTitle>Product Details</CardTitle>
-        <CardDescription>
-          Added on {formattedDate}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-sm font-medium text-gray-500">Description</h3>
+    <Card className="mt-6">
+      <CardContent className="pt-6 pb-2">
+        <div className="flex justify-between items-start mb-4">
+          <h2 className="text-xl font-bold">{product.title}</h2>
+          <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit
+          </Button>
+        </div>
+        
+        {product.description && (
+          <div className="mb-4">
             <p className="text-gray-700">{product.description}</p>
           </div>
+        )}
+        
+        <div className="space-y-2 text-sm">
+          {product.price && (
+            <div className="flex justify-between">
+              <span className="text-gray-500">Price:</span>
+              <span className="font-medium">{product.price}</span>
+            </div>
+          )}
           
-          <div>
-            <h3 className="text-sm font-medium text-gray-500">Collection</h3>
-            {collection ? (
-              <Link to={`/collection/${collection.id}`}>
-                <Badge 
-                  className="mt-1 cursor-pointer"
-                  style={{ 
-                    backgroundColor: `${collection.color}20`, 
-                    color: collection.color 
-                  }}
-                >
-                  {collection.name}
-                </Badge>
-              </Link>
-            ) : (
-              <p className="text-gray-700">Not in a collection</p>
-            )}
-          </div>
+          {product.sourceName && (
+            <div className="flex justify-between">
+              <span className="text-gray-500">Source:</span>
+              <span className="font-medium">{product.sourceName}</span>
+            </div>
+          )}
+          
+          {collection && (
+            <div className="flex justify-between">
+              <span className="text-gray-500">Collection:</span>
+              <div className="flex items-center">
+                <span 
+                  className="w-3 h-3 rounded-full mr-2"
+                  style={{ backgroundColor: collection.color }}
+                ></span>
+                <span className="font-medium">{collection.name}</span>
+              </div>
+            </div>
+          )}
+          
+          {product.dateAdded && (
+            <div className="flex justify-between">
+              <span className="text-gray-500">Added on:</span>
+              <span className="font-medium">
+                {new Date(product.dateAdded).toLocaleDateString()}
+              </span>
+            </div>
+          )}
         </div>
       </CardContent>
+      
+      {product.productUrl && (
+        <CardFooter className="pb-4">
+          <Button 
+            className="w-full"
+            variant="outline"
+            onClick={() => window.open(product.productUrl, '_blank')}
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            View Original
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 };
