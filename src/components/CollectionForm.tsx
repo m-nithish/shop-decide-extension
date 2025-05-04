@@ -1,46 +1,50 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useProducts } from '@/context/ProductsContext';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
-const colors = [
-  '#8B5CF6', // Purple
-  '#EF4444', // Red
-  '#10B981', // Green
-  '#3B82F6', // Blue
-  '#F59E0B', // Amber
-  '#EC4899', // Pink
-  '#6366F1', // Indigo
-  '#14B8A6'  // Teal
+const defaultColors = [
+  '#F87171', // Red
+  '#FB923C', // Orange
+  '#FBBF24', // Amber
+  '#A3E635', // Lime
+  '#34D399', // Emerald
+  '#22D3EE', // Cyan
+  '#60A5FA', // Blue
+  '#818CF8', // Indigo
+  '#A78BFA', // Violet
+  '#E879F9', // Pink
 ];
 
-const CollectionForm: React.FC = () => {
+const CollectionForm = () => {
   const navigate = useNavigate();
   const { addCollection } = useProducts();
-  const { user } = useAuth();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    color: '#8B5CF6'
+    color: defaultColors[Math.floor(Math.random() * defaultColors.length)],
   });
   
-  const [isLoading, setIsLoading] = useState(false);
+  const [selectedColorIndex, setSelectedColorIndex] = useState(
+    defaultColors.indexOf(formData.color)
+  );
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
   
-  const handleColorSelect = (color: string) => {
+  const handleColorSelect = (color: string, index: number) => {
+    setSelectedColorIndex(index);
     setFormData(prev => ({ ...prev, color }));
   };
   
@@ -50,35 +54,38 @@ const CollectionForm: React.FC = () => {
     
     try {
       const newCollection = await addCollection(formData);
-      setIsLoading(false);
       
-      if (newCollection && newCollection.id) {
+      if (newCollection) {
         toast({
-          title: "Collection Created",
-          description: `${formData.name} collection has been created.`
+          title: 'Collection created',
+          description: `Collection "${formData.name}" has been created successfully.`,
         });
-        // Make sure we navigate to the correct path
+        
+        // Navigate to the collection detail page using the new collection ID
         navigate(`/collection/${newCollection.id}`);
       } else {
-        // Fallback if for some reason we don't have the collection ID
-        navigate('/');
+        throw new Error('Failed to create collection');
       }
     } catch (error) {
       console.error('Error creating collection:', error);
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to create collection. Please try again."
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to create collection. Please try again.',
       });
+    } finally {
       setIsLoading(false);
     }
   };
   
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-lg mx-auto">
       <form onSubmit={handleSubmit}>
         <CardHeader>
           <CardTitle>Create Collection</CardTitle>
+          <CardDescription>
+            Create a new collection to organize your products.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -86,7 +93,7 @@ const CollectionForm: React.FC = () => {
             <Input
               id="name"
               name="name"
-              placeholder="e.g., Smartphones, Dream Home, Gift Ideas"
+              placeholder="My Favorite Products"
               value={formData.name}
               onChange={handleChange}
               required
@@ -94,11 +101,11 @@ const CollectionForm: React.FC = () => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Description (Optional)</Label>
             <Textarea
               id="description"
               name="description"
-              placeholder="What are you collecting?"
+              placeholder="Describe your collection..."
               value={formData.description}
               onChange={handleChange}
               rows={3}
@@ -107,16 +114,16 @@ const CollectionForm: React.FC = () => {
           
           <div className="space-y-2">
             <Label>Color</Label>
-            <div className="flex flex-wrap gap-2">
-              {colors.map(color => (
+            <div className="flex flex-wrap gap-2 mt-1">
+              {defaultColors.map((color, index) => (
                 <button
                   key={color}
                   type="button"
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    formData.color === color ? 'ring-2 ring-offset-2 ring-theme-purple' : ''
+                  className={`w-8 h-8 rounded-full border-2 ${
+                    selectedColorIndex === index ? 'border-gray-900' : 'border-transparent'
                   }`}
                   style={{ backgroundColor: color }}
-                  onClick={() => handleColorSelect(color)}
+                  onClick={() => handleColorSelect(color, index)}
                 />
               ))}
             </div>
@@ -130,7 +137,11 @@ const CollectionForm: React.FC = () => {
           >
             Cancel
           </Button>
-          <Button type="submit" className="bg-theme-purple hover:bg-theme-purple/90" disabled={isLoading}>
+          <Button 
+            type="submit" 
+            className="bg-theme-purple hover:bg-theme-purple/90"
+            disabled={isLoading}
+          >
             {isLoading ? 'Creating...' : 'Create Collection'}
           </Button>
         </CardFooter>

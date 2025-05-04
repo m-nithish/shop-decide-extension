@@ -10,9 +10,10 @@ import {
   deleteCollection as deleteCollectionService,
   addProductToCollection,
   removeProductFromCollection,
-  getProductsByCollection as getProductsByCollectionService
+  getProductsByCollection as getProductsByCollectionService,
+  createProduct as createProductService
 } from '@/services/collectionService';
-import { SupabaseCollection } from '@/types/supabase';
+import { SupabaseCollection, CreateProductParams } from '@/types/supabase';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ProductsContextProps {
@@ -104,7 +105,7 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       if (user) {
         // If authenticated, create product in Supabase
-        const { data, error } = await supabase.rpc('create_product', {
+        const params: CreateProductParams = {
           p_user_id: user.id,
           p_title: product.title,
           p_description: product.description,
@@ -112,7 +113,9 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           p_image_url: product.imageUrl,
           p_product_url: product.productUrl,
           p_source_name: product.sourceName
-        });
+        };
+        
+        const { data, error } = await createProductService(params);
         
         if (error) {
           console.error('Error creating product:', error);
@@ -126,7 +129,7 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         
         if (data) {
           // Get the new product ID
-          const productId = data;
+          const productId: string = data;
           
           // Create a product object with the returned ID
           const newProduct: Product = {
