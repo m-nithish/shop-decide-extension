@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, Collection } from '../types';
 import { products as initialProducts, collections as initialCollections } from '../utils/mockData';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { 
   getUserCollections, 
@@ -11,7 +11,8 @@ import {
   addProductToCollection,
   removeProductFromCollection,
   getProductsByCollection as getProductsByCollectionService,
-  createProduct as createProductService
+  createProduct as createProductService,
+  getUserProducts
 } from '@/services/collectionService';
 import { SupabaseCollection, CreateProductParams } from '@/types/supabase';
 import { supabase } from '@/integrations/supabase/client';
@@ -106,7 +107,6 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (user) {
         // If authenticated, create product in Supabase
         const params: CreateProductParams = {
-          p_user_id: user.id,
           p_title: product.title,
           p_description: product.description,
           p_price: product.price,
@@ -115,7 +115,7 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           p_source_name: product.sourceName
         };
         
-        const { data, error } = await createProductService(params);
+        const { data: productId, error } = await createProductService(params);
         
         if (error) {
           console.error('Error creating product:', error);
@@ -127,10 +127,7 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           return undefined;
         }
         
-        if (data) {
-          // Get the new product ID
-          const productId: string = data;
-          
+        if (productId) {
           // Create a product object with the returned ID
           const newProduct: Product = {
             ...product,
@@ -139,14 +136,15 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           };
           
           // Add to collection if specified
-          if (product.collectionId) {
+          if (product.collectionId && product.collectionId !== 'none') {
             await addProductToCollection({
               p_product_id: productId,
               p_collection_id: product.collectionId
             });
           }
           
-          setProducts([...products, newProduct]);
+          // Update the products list
+          setProducts(prevProducts => [...prevProducts, newProduct]);
           
           toast({
             title: "Product Added",

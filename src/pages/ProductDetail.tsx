@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -18,6 +19,7 @@ import ProductImage from '@/components/product-detail/ProductImage';
 import ProductInfo from '@/components/product-detail/ProductInfo';
 import ProductDetailSidebar from '@/components/product-detail/ProductDetailSidebar';
 import { callRPC } from '@/utils/supabaseHelpers';
+import { getProduct } from '@/services/collectionService';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -37,8 +39,23 @@ const ProductDetail = () => {
   }, [id]);
 
   const loadProductData = async () => {
+    if (!id) return;
+    
     try {
-      const notesParams: GetProductNoteParams = { p_product_id: id! };
+      // Try to get product from database
+      const { data: productData, error: productError } = await getProduct(id);
+      
+      if (productError) {
+        console.error('Error loading product:', productError);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load product"
+        });
+        return;
+      }
+      
+      const notesParams: GetProductNoteParams = { p_product_id: id };
       const { data: notesData, error: notesError } = await callRPC<ProductNote[], GetProductNoteParams>(
         'get_product_notes', 
         notesParams
@@ -52,7 +69,7 @@ const ProductDetail = () => {
         setNotes(notesData[0].content || '');
       }
 
-      const linksParams: GetProductLinksParams = { p_product_id: id! };
+      const linksParams: GetProductLinksParams = { p_product_id: id };
       const { data: linksData, error: linksError } = await callRPC<ProductLink[], GetProductLinksParams>(
         'get_product_links',
         linksParams
@@ -66,7 +83,7 @@ const ProductDetail = () => {
         setProductLinks(linksData || []);
       }
 
-      const sourcesParams: GetExternalSourcesParams = { p_product_id: id! };
+      const sourcesParams: GetExternalSourcesParams = { p_product_id: id };
       const { data: sourcesData, error: sourcesError } = await callRPC<ProductExternalSource[], GetExternalSourcesParams>(
         'get_external_sources',
         sourcesParams

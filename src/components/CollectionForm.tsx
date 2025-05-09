@@ -53,6 +53,7 @@ const CollectionForm = () => {
     setIsLoading(true);
     
     try {
+      // Create collection and get the returned collection object
       const newCollection = await addCollection(formData);
       
       if (newCollection) {

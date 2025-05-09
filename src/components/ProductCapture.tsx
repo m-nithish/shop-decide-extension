@@ -21,7 +21,7 @@ const ProductCapture: React.FC = () => {
   
   // Get collectionId from URL query params if available
   const queryParams = new URLSearchParams(location.search);
-  const preselectedCollectionId = queryParams.get('collectionId') || '';
+  const preselectedCollectionId = queryParams.get('collectionId') || 'none';
   
   const [formData, setFormData] = useState({
     title: '',
@@ -48,7 +48,10 @@ const ProductCapture: React.FC = () => {
   };
   
   const handleCollectionChange = (value: string) => {
-    setFormData(prev => ({ ...prev, collectionId: value }));
+    setFormData(prev => ({ 
+      ...prev, 
+      collectionId: value === 'none' ? '' : value 
+    }));
   };
   
   const handleSubmit = async (e: React.FormEvent) => {
@@ -174,7 +177,8 @@ const ProductCapture: React.FC = () => {
                 <SelectValue placeholder="Select a collection" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Uncategorized</SelectItem>
+                {/* Use "none" instead of empty string for uncategorized option */}
+                <SelectItem value="none">Uncategorized</SelectItem>
                 {collections.map(collection => (
                   <SelectItem key={collection.id} value={collection.id}>
                     {collection.name}

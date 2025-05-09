@@ -11,7 +11,12 @@ export async function callRPC<T, P extends Record<string, any>>(
   functionName: string,
   params?: P
 ): Promise<{ data: T | null; error: Error | null }> {
-  // Use a type assertion to bypass TypeScript's limitations with the Supabase client
-  const response = await (supabase.rpc as any)(functionName, params);
-  return response as { data: T | null; error: Error | null };
+  try {
+    // Use a type assertion to bypass TypeScript's limitations with the Supabase client
+    const response = await supabase.rpc(functionName, params);
+    return response as { data: T | null; error: Error | null };
+  } catch (error) {
+    console.error(`Error calling RPC function ${functionName}:`, error);
+    return { data: null, error: error as Error };
+  }
 }

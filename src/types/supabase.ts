@@ -148,7 +148,6 @@ export type SupabaseProduct = {
 };
 
 export type CreateProductParams = {
-  p_user_id: string;
   p_title: string;
   p_description?: string | null;
   p_price?: string | null;
