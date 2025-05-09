@@ -169,3 +169,25 @@ export type UpdateProductParams = {
 export type DeleteProductParams = {
   p_product_id: string;
 };
+
+// RPC function name types - adding these to help with TypeScript type checking
+export type RpcFunctionName = 
+  | "save_product_notes"
+  | "get_product_notes"
+  | "get_product_links"
+  | "save_product_link"
+  | "delete_product_link"
+  | "get_external_sources"
+  | "save_external_source"
+  | "delete_external_source"
+  | "get_user_collections"
+  | "create_collection"
+  | "delete_collection"
+  | "add_product_to_collection"
+  | "remove_product_from_collection"
+  | "get_products_by_collection"
+  | "get_user_products"
+  | "create_product"
+  | "get_product"
+  | "update_product"
+  | "delete_product";
