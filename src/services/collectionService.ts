@@ -42,7 +42,7 @@ export async function getProductsByCollection(collectionId: string): Promise<{ d
   });
 }
 
-// New product service functions
+// Product service functions
 export async function getUserProducts(): Promise<{ data: SupabaseProduct[] | null; error: Error | null }> {
   return await callRPC<SupabaseProduct[], {}>('get_user_products');
 }

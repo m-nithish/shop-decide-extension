@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { RpcFunctionName } from "@/types/supabase";
 
 /**
  * Type-safe wrapper for Supabase RPC calls

@@ -144,6 +144,7 @@ export type SupabaseProduct = {
   image_url: string | null;
   product_url: string | null;
   source_name: string | null;
+  collection_id: string | null;
   created_at: string;
 };
 
@@ -154,6 +155,7 @@ export type CreateProductParams = {
   p_image_url?: string | null;
   p_product_url?: string | null;
   p_source_name?: string | null;
+  p_collection_id?: string | null;
 };
 
 export type UpdateProductParams = {
@@ -164,6 +166,7 @@ export type UpdateProductParams = {
   p_image_url: string | null;
   p_product_url: string | null;
   p_source_name: string | null;
+  p_collection_id: string | null;
 };
 
 export type DeleteProductParams = {
