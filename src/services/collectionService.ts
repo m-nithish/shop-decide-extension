@@ -36,8 +36,8 @@ export async function removeProductFromCollection(params: RemoveProductFromColle
   return await callRPC<boolean, RemoveProductFromCollectionParams>('remove_product_from_collection', params);
 }
 
-export async function getProductsByCollection(collectionId: string): Promise<{ data: ProductCollectionItem[] | null; error: Error | null }> {
-  return await callRPC<ProductCollectionItem[], GetProductsByCollectionParams>('get_products_by_collection', {
+export async function getProductsByCollection(collectionId: string): Promise<{ data: SupabaseProduct[] | null; error: Error | null }> {
+  return await callRPC<SupabaseProduct[], { p_collection_id: string }>('get_products_by_collection', {
     p_collection_id: collectionId
   });
 }

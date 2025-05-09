@@ -6,6 +6,8 @@ import { ExternalLink, Edit } from 'lucide-react';
 import { Product, Collection } from '@/types';
 import { useProducts } from '@/context/ProductsContext';
 import ProductEditForm from './ProductEditForm';
+import { updateProduct } from '@/services/collectionService';
+import { useToast } from '@/components/ui/use-toast';
 
 interface ProductInfoProps {
   product: Product;
@@ -15,22 +17,52 @@ interface ProductInfoProps {
 const ProductInfo = ({ product, collection }: ProductInfoProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const { addProduct, deleteProduct } = useProducts();
+  const { toast } = useToast();
 
-  const handleSaveEdit = (updatedProduct: Product) => {
-    // Delete old product and add the updated one
-    // This is a workaround since we don't have a direct update method
-    deleteProduct(product.id);
-    addProduct({
-      title: updatedProduct.title,
-      description: updatedProduct.description,
-      price: updatedProduct.price,
-      imageUrl: updatedProduct.imageUrl,
-      productUrl: updatedProduct.productUrl,
-      sourceName: updatedProduct.sourceName,
-      collectionId: updatedProduct.collectionId,
-    });
-    
-    setIsEditing(false);
+  const handleSaveEdit = async (updatedProduct: Product) => {
+    try {
+      // Use the updateProduct service function
+      const { data, error } = await updateProduct({
+        p_product_id: updatedProduct.id,
+        p_title: updatedProduct.title,
+        p_description: updatedProduct.description,
+        p_price: updatedProduct.price,
+        p_image_url: updatedProduct.imageUrl,
+        p_product_url: updatedProduct.productUrl,
+        p_source_name: updatedProduct.sourceName,
+        p_collection_id: updatedProduct.collectionId
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Update local state by replacing the product
+      deleteProduct(product.id);
+      addProduct({
+        title: updatedProduct.title,
+        description: updatedProduct.description,
+        price: updatedProduct.price,
+        imageUrl: updatedProduct.imageUrl,
+        productUrl: updatedProduct.productUrl,
+        sourceName: updatedProduct.sourceName,
+        collectionId: updatedProduct.collectionId,
+      });
+      
+      toast({
+        title: "Product updated",
+        description: "Product details have been updated successfully."
+      });
+      
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      toast({
+        variant: "destructive",
+        title: "Update failed",
+        description: "There was an error updating the product."
+      });
+    }
   };
   
   if (isEditing) {

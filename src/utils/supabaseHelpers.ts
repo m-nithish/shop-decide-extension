@@ -9,7 +9,7 @@ import { RpcFunctionName } from "@/types/supabase";
  * @returns A properly typed response from the RPC function
  */
 export async function callRPC<T, P extends Record<string, any>>(
-  functionName: string,
+  functionName: RpcFunctionName | string,
   params?: P
 ): Promise<{ data: T | null; error: Error | null }> {
   try {

@@ -170,7 +170,7 @@ const ProductCapture: React.FC = () => {
           <div className="space-y-2">
             <Label htmlFor="collection">Collection</Label>
             <Select 
-              value={formData.collectionId} 
+              value={formData.collectionId || 'none'} 
               onValueChange={handleCollectionChange}
             >
               <SelectTrigger id="collection">
