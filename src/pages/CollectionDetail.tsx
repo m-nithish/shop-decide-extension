@@ -54,10 +54,14 @@ const CollectionDetail = () => {
   
   const formattedDate = new Date(collection.createdAt).toLocaleDateString();
   
+  const handleBackClick = () => {
+    // Navigate to home page with collections tab active
+    navigate('/?tab=collections');
+  };
+  
   const handleDelete = async () => {
     await deleteCollection(collection.id);
-    // Navigate to the collections page instead of using back navigation
-    navigate('/'); // Navigate to homepage which has the collections tab
+    navigate('/?tab=collections'); // Navigate to homepage with collections tab
   };
   
   return (
@@ -69,7 +73,7 @@ const CollectionDetail = () => {
             variant="ghost" 
             size="sm" 
             className="mb-4"
-            onClick={() => navigate(-1)}
+            onClick={handleBackClick}
           >
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </Button>

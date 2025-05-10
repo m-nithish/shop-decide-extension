@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Grid2X2, List, Folder, Plus } from 'lucide-react';
@@ -12,13 +12,28 @@ import { useProducts } from '@/context/ProductsContext';
 const Index = () => {
   const { products, collections } = useProducts();
   const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
+  const location = useLocation();
+  
+  // Get tab from URL query params if available
+  const queryParams = new URLSearchParams(location.search);
+  const tabParam = queryParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabParam === 'collections' ? 'collections' : 'products');
+  
+  // Update active tab when URL changes
+  useEffect(() => {
+    if (tabParam === 'collections') {
+      setActiveTab('collections');
+    } else if (tabParam === 'products') {
+      setActiveTab('products');
+    }
+  }, [tabParam]);
   
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
       
       <main className="flex-grow container px-4 py-8">
-        <Tabs defaultValue="products" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-between items-center mb-6">
             <TabsList>
               <TabsTrigger value="products">Products</TabsTrigger>

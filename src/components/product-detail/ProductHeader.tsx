@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -16,13 +15,23 @@ const ProductHeader = ({ product, collection, onDelete }: ProductHeaderProps) =>
   const navigate = useNavigate();
   const formattedDate = new Date(product.dateAdded).toLocaleDateString();
 
+  const handleBackClick = () => {
+    if (product.collectionId && collection) {
+      // If product belongs to a collection, navigate to that collection
+      navigate(`/collection/${product.collectionId}`);
+    } else {
+      // Otherwise, navigate to products tab on home page
+      navigate('/');
+    }
+  };
+
   return (
     <div className="mb-6">
       <Button 
         variant="ghost" 
         size="sm" 
         className="mb-4"
-        onClick={() => navigate(-1)}
+        onClick={handleBackClick}
       >
         <ArrowLeft className="h-4 w-4 mr-2" /> Back
       </Button>

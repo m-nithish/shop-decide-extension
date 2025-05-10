@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,10 +27,6 @@ const ProductCapture: React.FC = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    price: '',
-    imageUrl: '',
-    productUrl: '',
-    sourceName: '',
     collectionId: preselectedCollectionId
   });
   
@@ -59,8 +56,16 @@ const ProductCapture: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // Add the product and get the new product object
-      const newProduct = await addProduct(formData as Omit<Product, 'id' | 'dateAdded'>);
+      // Add the product with just the essential fields
+      const productData: Omit<Product, 'id' | 'dateAdded'> = {
+        ...formData,
+        price: '',
+        imageUrl: '',
+        productUrl: '',
+        sourceName: ''
+      };
+      
+      const newProduct = await addProduct(productData);
       
       if (newProduct) {
         toast({
@@ -89,9 +94,9 @@ const ProductCapture: React.FC = () => {
     <Card className="w-full max-w-2xl mx-auto">
       <form onSubmit={handleSubmit}>
         <CardHeader>
-          <CardTitle>Capture Product</CardTitle>
+          <CardTitle>Add New Product</CardTitle>
           <CardDescription>
-            Add product details manually or paste a URL to auto-fill (simulated).
+            Enter the basic product information - you can add more details after creation.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -117,54 +122,6 @@ const ProductCapture: React.FC = () => {
               onChange={handleChange}
               rows={3}
             />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="price">Price</Label>
-              <Input
-                id="price"
-                name="price"
-                placeholder="$99.99"
-                value={formData.price}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="sourceName">Source</Label>
-              <Input
-                id="sourceName"
-                name="sourceName"
-                placeholder="Amazon, eBay, etc."
-                value={formData.sourceName}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="productUrl">Product URL</Label>
-            <Input
-              id="productUrl"
-              name="productUrl"
-              placeholder="https://example.com/product"
-              value={formData.productUrl}
-              onChange={handleChange}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="imageUrl">Image URL</Label>
-            <Input
-              id="imageUrl"
-              name="imageUrl"
-              placeholder="https://example.com/image.jpg"
-              value={formData.imageUrl}
-              onChange={handleChange}
-            />
-            <p className="text-xs text-muted-foreground">
-              Enter an image URL or use a placeholder like "https://placehold.co/400x300"
-            </p>
           </div>
           
           <div className="space-y-2">
