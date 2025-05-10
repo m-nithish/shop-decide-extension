@@ -112,7 +112,8 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           p_price: product.price,
           p_image_url: product.imageUrl,
           p_product_url: product.productUrl,
-          p_source_name: product.sourceName
+          p_source_name: product.sourceName,
+          p_collection_id: product.collectionId !== 'none' ? product.collectionId : null
         };
         
         const { data: productId, error } = await createProductService(params);
@@ -301,7 +302,7 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const getProductsByCollection = async (collectionId: string): Promise<Product[]> => {
     if (user) {
       try {
-        // Get product IDs for this collection from Supabase
+        // Get products for this collection from Supabase
         const { data, error } = await getProductsByCollectionService(collectionId);
         
         if (error) {
@@ -310,9 +311,20 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
         
         if (data && data.length > 0) {
-          // Filter local products matching the returned IDs
-          const productIds = data.map(item => item.product_id);
-          return products.filter(product => productIds.includes(product.id));
+          // Convert Supabase products to our app's Product format
+          const formattedProducts: Product[] = data.map(item => ({
+            id: item.id, // Fix: Using 'id' instead of 'product_id'
+            title: item.title,
+            description: item.description || '',
+            price: item.price || '',
+            imageUrl: item.image_url || '',
+            productUrl: item.product_url || '',
+            sourceName: item.source_name || '',
+            dateAdded: item.created_at,
+            collectionId: item.collection_id || ''
+          }));
+          
+          return formattedProducts;
         }
         return [];
       } catch (err) {
