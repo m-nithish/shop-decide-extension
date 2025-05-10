@@ -67,6 +67,7 @@ const AddLinkDialog = ({ productId, open, onOpenChange, onLinkAdded }: AddLinkDi
         const newLink: ProductLink = {
           id: data,
           product_id: productId,
+          product_uuid: null, // Add the missing property
           source_name: formData.sourceName,
           product_name: formData.productName,
           url: formData.url,

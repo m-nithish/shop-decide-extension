@@ -1,4 +1,3 @@
-
 // Define request parameter types and response types for all our Supabase RPC functions
 
 // Product Notes types

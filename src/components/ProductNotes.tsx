@@ -25,7 +25,6 @@ const ProductNotes = ({ productId, initialNotes = '' }: ProductNotesProps) => {
     try {
       const params: SaveProductNotesParams = {
         p_product_id: productId,
-        p_user_id: user.id,
         p_content: notes
       };
       

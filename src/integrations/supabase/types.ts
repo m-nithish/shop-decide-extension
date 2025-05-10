@@ -9,11 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      collections: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       external_sources: {
         Row: {
           created_at: string
           id: string
           product_id: string
+          product_uuid: string | null
           source_type: string
           title: string
           url: string
@@ -22,6 +50,7 @@ export type Database = {
           created_at?: string
           id?: string
           product_id: string
+          product_uuid?: string | null
           source_type: string
           title: string
           url: string
@@ -30,6 +59,7 @@ export type Database = {
           created_at?: string
           id?: string
           product_id?: string
+          product_uuid?: string | null
           source_type?: string
           title?: string
           url?: string
@@ -43,6 +73,7 @@ export type Database = {
           price: number | null
           product_id: string
           product_name: string
+          product_uuid: string | null
           rating: number | null
           review_count: number | null
           source_name: string
@@ -55,6 +86,7 @@ export type Database = {
           price?: number | null
           product_id: string
           product_name: string
+          product_uuid?: string | null
           rating?: number | null
           review_count?: number | null
           source_name: string
@@ -67,6 +99,7 @@ export type Database = {
           price?: number | null
           product_id?: string
           product_name?: string
+          product_uuid?: string | null
           rating?: number | null
           review_count?: number | null
           source_name?: string
@@ -81,6 +114,7 @@ export type Database = {
           created_at: string
           id: string
           product_id: string
+          product_uuid: string | null
           updated_at: string
           user_id: string
         }
@@ -89,6 +123,7 @@ export type Database = {
           created_at?: string
           id?: string
           product_id: string
+          product_uuid?: string | null
           updated_at?: string
           user_id: string
         }
@@ -97,10 +132,58 @@ export type Database = {
           created_at?: string
           id?: string
           product_id?: string
+          product_uuid?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      products: {
+        Row: {
+          collection_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          price: string | null
+          product_url: string | null
+          source_name: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          collection_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          price?: string | null
+          product_url?: string | null
+          source_name?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          collection_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          price?: string | null
+          product_url?: string | null
+          source_name?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -131,8 +214,36 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_product_to_collection: {
+        Args: { p_product_id: string; p_collection_id: string }
+        Returns: string
+      }
+      create_collection: {
+        Args: { p_name: string; p_description: string; p_color: string }
+        Returns: string
+      }
+      create_product: {
+        Args: {
+          p_title: string
+          p_description: string
+          p_price: string
+          p_image_url: string
+          p_product_url: string
+          p_source_name: string
+          p_collection_id: string
+        }
+        Returns: string
+      }
+      delete_collection: {
+        Args: { p_collection_id: string }
+        Returns: boolean
+      }
       delete_external_source: {
         Args: { p_source_id: string }
+        Returns: boolean
+      }
+      delete_product: {
+        Args: { p_product_id: string }
         Returns: boolean
       }
       delete_product_link: {
@@ -145,9 +256,37 @@ export type Database = {
           created_at: string
           id: string
           product_id: string
+          product_uuid: string | null
           source_type: string
           title: string
           url: string
+        }[]
+      }
+      get_external_sources_old: {
+        Args: { p_product_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          product_id: string
+          product_uuid: string | null
+          source_type: string
+          title: string
+          url: string
+        }[]
+      }
+      get_product: {
+        Args: { p_product_id: string }
+        Returns: {
+          collection_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          price: string | null
+          product_url: string | null
+          source_name: string | null
+          title: string
+          user_id: string
         }[]
       }
       get_product_links: {
@@ -158,6 +297,23 @@ export type Database = {
           price: number | null
           product_id: string
           product_name: string
+          product_uuid: string | null
+          rating: number | null
+          review_count: number | null
+          source_name: string
+          updated_at: string
+          url: string
+        }[]
+      }
+      get_product_links_old: {
+        Args: { p_product_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          price: number | null
+          product_id: string
+          product_name: string
+          product_uuid: string | null
           rating: number | null
           review_count: number | null
           source_name: string
@@ -172,11 +328,78 @@ export type Database = {
           created_at: string
           id: string
           product_id: string
+          product_uuid: string | null
           updated_at: string
           user_id: string
         }[]
       }
+      get_product_notes_old: {
+        Args: { p_product_id: string }
+        Returns: {
+          content: string | null
+          created_at: string
+          id: string
+          product_id: string
+          product_uuid: string | null
+          updated_at: string
+          user_id: string
+        }[]
+      }
+      get_products_by_collection: {
+        Args: { p_collection_id: string }
+        Returns: {
+          collection_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          price: string | null
+          product_url: string | null
+          source_name: string | null
+          title: string
+          user_id: string
+        }[]
+      }
+      get_user_collections: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          color: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          user_id: string
+        }[]
+      }
+      get_user_products: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          collection_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          price: string | null
+          product_url: string | null
+          source_name: string | null
+          title: string
+          user_id: string
+        }[]
+      }
+      remove_product_from_collection: {
+        Args: { p_product_id: string; p_collection_id: string }
+        Returns: boolean
+      }
       save_external_source: {
+        Args: {
+          p_product_id: string
+          p_title: string
+          p_url: string
+          p_source_type: string
+        }
+        Returns: string
+      }
+      save_external_source_old: {
         Args: {
           p_product_id: string
           p_title: string
@@ -197,9 +420,38 @@ export type Database = {
         }
         Returns: string
       }
+      save_product_link_old: {
+        Args: {
+          p_product_id: string
+          p_source_name: string
+          p_product_name: string
+          p_url: string
+          p_price?: number
+          p_rating?: number
+          p_review_count?: number
+        }
+        Returns: string
+      }
       save_product_notes: {
+        Args: { p_product_id: string; p_content: string }
+        Returns: undefined
+      }
+      save_product_notes_old: {
         Args: { p_product_id: string; p_user_id: string; p_content: string }
         Returns: undefined
+      }
+      update_product: {
+        Args: {
+          p_product_id: string
+          p_title: string
+          p_description: string
+          p_price: string
+          p_image_url: string
+          p_product_url: string
+          p_source_name: string
+          p_collection_id: string
+        }
+        Returns: boolean
       }
     }
     Enums: {
