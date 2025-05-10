@@ -16,12 +16,12 @@ const ProductHeader = ({ product, collection, onDelete }: ProductHeaderProps) =>
   const formattedDate = new Date(product.dateAdded).toLocaleDateString();
 
   const handleBackClick = () => {
-    if (product.collectionId && collection) {
+    if (product.collectionId) {
       // If product belongs to a collection, navigate to that collection
       navigate(`/collection/${product.collectionId}`);
     } else {
       // Otherwise, navigate to products tab on home page
-      navigate('/');
+      navigate('/?tab=products');
     }
   };
 

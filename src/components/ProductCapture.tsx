@@ -16,7 +16,7 @@ import { ensureUUID } from '@/utils/supabaseHelpers';
 const ProductCapture: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { collections, addProduct, fetchUserCollections } = useProducts();
+  const { collections, addProduct, fetchUserCollections, isLoading: isProductsLoading } = useProducts();
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -31,12 +31,24 @@ const ProductCapture: React.FC = () => {
   });
   
   const [isLoading, setIsLoading] = useState(false);
+  const [isCollectionsLoading, setIsCollectionsLoading] = useState(true);
   
   // Load user collections if authenticated
   useEffect(() => {
-    if (user) {
-      fetchUserCollections();
-    }
+    const loadCollections = async () => {
+      setIsCollectionsLoading(true);
+      if (user) {
+        try {
+          await fetchUserCollections();
+        } catch (error) {
+          console.error("Error fetching collections:", error);
+          // Don't show an error toast here - we'll silently fail instead
+        }
+      }
+      setIsCollectionsLoading(false);
+    };
+    
+    loadCollections();
   }, [user, fetchUserCollections]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -129,9 +141,10 @@ const ProductCapture: React.FC = () => {
             <Select 
               value={formData.collectionId || 'none'} 
               onValueChange={handleCollectionChange}
+              disabled={isCollectionsLoading}
             >
               <SelectTrigger id="collection">
-                <SelectValue placeholder="Select a collection" />
+                <SelectValue placeholder={isCollectionsLoading ? "Loading collections..." : "Select a collection"} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Uncategorized</SelectItem>
@@ -142,6 +155,9 @@ const ProductCapture: React.FC = () => {
                 ))}
               </SelectContent>
             </Select>
+            {isCollectionsLoading && (
+              <p className="text-xs text-muted-foreground mt-1">Loading collections...</p>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
