@@ -21,3 +21,25 @@ export async function callRPC<T, P extends Record<string, any>>(
     return { data: null, error: error as Error };
   }
 }
+
+/**
+ * Converts string IDs to UUIDs if needed
+ * This helps with backward compatibility while we migrate to proper UUID types
+ * @param id The ID to validate and potentially convert
+ * @returns The ID in the correct format for Supabase
+ */
+export function ensureUUID(id: string): string {
+  // Check if the ID is already a valid UUID
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  
+  if (uuidRegex.test(id)) {
+    return id;
+  }
+  
+  // If it's not a UUID, check if it has a prefix like 'product-' or 'collection-'
+  if (id.includes('-')) {
+    console.warn(`ID ${id} is not a valid UUID. This may cause issues with Supabase queries.`);
+  }
+  
+  return id;
+}

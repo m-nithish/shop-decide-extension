@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +10,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Product } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
+import { ensureUUID } from '@/utils/supabaseHelpers';
 
 const ProductCapture: React.FC = () => {
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ const ProductCapture: React.FC = () => {
   const handleCollectionChange = (value: string) => {
     setFormData(prev => ({ 
       ...prev, 
-      collectionId: value === 'none' ? '' : value 
+      collectionId: value === 'none' ? '' : ensureUUID(value)
     }));
   };
   
@@ -177,7 +177,6 @@ const ProductCapture: React.FC = () => {
                 <SelectValue placeholder="Select a collection" />
               </SelectTrigger>
               <SelectContent>
-                {/* Use "none" instead of empty string for uncategorized option */}
                 <SelectItem value="none">Uncategorized</SelectItem>
                 {collections.map(collection => (
                   <SelectItem key={collection.id} value={collection.id}>

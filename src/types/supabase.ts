@@ -4,7 +4,6 @@
 // Product Notes types
 export type SaveProductNotesParams = {
   p_product_id: string;
-  p_user_id: string;
   p_content: string;
 };
 
@@ -20,6 +19,7 @@ export type GetProductNoteParams = {
 export type ProductNote = {
   id: string;
   product_id: string;
+  product_uuid: string | null;
   user_id: string;
   content: string;
   created_at: string;
@@ -49,6 +49,7 @@ export type SaveProductLinkParams = {
 export type ProductLink = {
   id: string;
   product_id: string;
+  product_uuid: string | null;
   source_name: string;
   product_name: string;
   url: string;
@@ -79,6 +80,7 @@ export type SaveExternalSourceParams = {
 export type ProductExternalSource = {
   id: string;
   product_id: string;
+  product_uuid: string | null;
   title: string;
   url: string;
   source_type: 'youtube' | 'pinterest' | 'other';

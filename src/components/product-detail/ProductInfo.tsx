@@ -30,7 +30,7 @@ const ProductInfo = ({ product, collection }: ProductInfoProps) => {
         p_image_url: updatedProduct.imageUrl,
         p_product_url: updatedProduct.productUrl,
         p_source_name: updatedProduct.sourceName,
-        p_collection_id: updatedProduct.collectionId
+        p_collection_id: updatedProduct.collectionId !== 'none' ? updatedProduct.collectionId : null
       });
       
       if (error) {

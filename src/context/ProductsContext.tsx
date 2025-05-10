@@ -16,6 +16,7 @@ import {
 } from '@/services/collectionService';
 import { SupabaseCollection, CreateProductParams } from '@/types/supabase';
 import { supabase } from '@/integrations/supabase/client';
+import { ensureUUID } from '@/utils/supabaseHelpers';
 
 interface ProductsContextProps {
   products: Product[];
@@ -313,7 +314,7 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (data && data.length > 0) {
           // Convert Supabase products to our app's Product format
           const formattedProducts: Product[] = data.map(item => ({
-            id: item.id, // Fix: Using 'id' instead of 'product_id'
+            id: item.id, // Using 'id' from SupabaseProduct
             title: item.title,
             description: item.description || '',
             price: item.price || '',
