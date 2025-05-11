@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Youtube, ExternalLink, Image, Trash, Edit, ArrowUp, ArrowDown } from 'lucide-react';
+import { Youtube, ExternalLink, Image, Trash, Edit, ChevronUp, ChevronDown } from 'lucide-react';
 import { ExternalSource } from '@/types/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { callRPC } from '@/utils/supabaseHelpers';
@@ -174,20 +174,20 @@ const ExternalSources = ({ sources, onAddSource, onDeleteSource, onEditSource }:
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-5 w-5"
+                  className="h-6 w-6 rounded-full hover:bg-gray-100"
                   onClick={() => moveUp(index)}
                   disabled={index === 0}
                 >
-                  <ArrowUp className="h-3 w-3" />
+                  <ChevronUp className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-5 w-5"
+                  className="h-6 w-6 rounded-full hover:bg-gray-100"
                   onClick={() => moveDown(index)}
                   disabled={index === orderedSources.length - 1}
                 >
-                  <ArrowDown className="h-3 w-3" />
+                  <ChevronDown className="h-4 w-4" />
                 </Button>
               </div>
               

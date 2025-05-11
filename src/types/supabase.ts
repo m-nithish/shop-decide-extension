@@ -1,3 +1,4 @@
+
 // Define request parameter types and response types for all our Supabase RPC functions
 
 // Product Notes types
@@ -43,6 +44,7 @@ export type SaveProductLinkParams = {
   p_price?: number;
   p_rating?: number;
   p_review_count?: number;
+  p_comments?: string;
 };
 
 export type ProductLink = {
@@ -52,9 +54,10 @@ export type ProductLink = {
   source_name: string;
   product_name: string;
   url: string;
-  price: number;
-  rating: number;
-  review_count: number;
+  price: number | null;
+  rating: number | null;
+  review_count: number | null;
+  comments?: string;
   created_at: string;
   updated_at: string;
 };
@@ -73,7 +76,7 @@ export type SaveExternalSourceParams = {
   p_product_id: string;
   p_title: string;
   p_url: string;
-  p_source_type: 'youtube' | 'pinterest' | 'other';
+  p_source_type: 'youtube' | 'pinterest' | 'other' | 'link' | 'article' | 'review';
 };
 
 export type ProductExternalSource = {
@@ -82,7 +85,7 @@ export type ProductExternalSource = {
   product_uuid: string | null;
   title: string;
   url: string;
-  source_type: 'youtube' | 'pinterest' | 'other';
+  source_type: 'youtube' | 'pinterest' | 'other' | 'link' | 'article' | 'review';
   created_at: string;
 };
 
@@ -97,7 +100,7 @@ export type ExternalSource = {
   product_id?: string;  // Make this optional for flexibility
   title: string;
   url: string;
-  source_type: 'youtube' | 'pinterest' | 'other';  // Ensure this is strictly typed
+  source_type: 'youtube' | 'pinterest' | 'other' | 'link' | 'article' | 'review';  // Ensure this is strictly typed
   created_at?: string;  // Make optional since it might not be available when creating
 };
 

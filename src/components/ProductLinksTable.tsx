@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Trash, Edit, Star, MessageSquare, ArrowUp, ArrowDown } from 'lucide-react';
+import { ExternalLink, Trash, Edit, Star, MessageSquare, ChevronUp, ChevronDown } from 'lucide-react';
 import { ProductLink } from '@/types/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { callRPC } from '@/utils/supabaseHelpers';
@@ -195,20 +195,20 @@ const ProductLinksTable = ({ links, onAddLink, onDeleteLink, onEditLink }: Produ
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-5 w-5"
+                        className="h-6 w-6 rounded-full hover:bg-gray-100"
                         onClick={() => moveUp(index)}
                         disabled={index === 0}
                       >
-                        <ArrowUp className="h-3 w-3" />
+                        <ChevronUp className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-5 w-5"
+                        className="h-6 w-6 rounded-full hover:bg-gray-100"
                         onClick={() => moveDown(index)}
                         disabled={index === orderedLinks.length - 1}
                       >
-                        <ArrowDown className="h-3 w-3" />
+                        <ChevronDown className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>

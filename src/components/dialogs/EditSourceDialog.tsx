@@ -23,7 +23,7 @@ interface EditSourceDialogProps {
 const formSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
   url: z.string().url({ message: 'Please enter a valid URL' }),
-  sourceType: z.string().min(1, { message: 'Source type is required' }),
+  sourceType: z.enum(['youtube', 'pinterest', 'other', 'link', 'article', 'review']),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -168,6 +168,7 @@ const EditSourceDialog = ({ open, onOpenChange, productId, source, onSourceUpdat
                       <SelectItem value="pinterest">Pinterest</SelectItem>
                       <SelectItem value="article">Article</SelectItem>
                       <SelectItem value="review">Review</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

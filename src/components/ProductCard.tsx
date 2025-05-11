@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Product } from '@/types';
-import { ImageOff } from 'lucide-react';
+import { ImageIcon } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -28,8 +28,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete }) => {
             }}
           />
         ) : (
-          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-            <ImageOff className="h-12 w-12 text-gray-400" />
+          <div className="w-full h-full bg-gradient-to-tr from-gray-100 to-gray-200 flex items-center justify-center">
+            <div className="text-center">
+              <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+              <span className="text-sm text-gray-500">{product.title}</span>
+            </div>
           </div>
         )}
         <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-semibold text-gray-700">
