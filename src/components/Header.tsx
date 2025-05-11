@@ -2,12 +2,16 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { LogOut, UserCircle } from 'lucide-react';
+import { LogOut, UserCircle, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
-const Header = () => {
+interface HeaderProps {
+  refreshData?: () => void;
+}
+
+const Header = ({ refreshData }: HeaderProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -38,6 +42,16 @@ const Header = () => {
     }
   };
   
+  const handleRefresh = () => {
+    if (refreshData) {
+      refreshData();
+      toast({
+        title: 'Refreshing data',
+        description: 'Updating your products and collections.',
+      });
+    }
+  };
+  
   return (
     <header className="bg-white border-b">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -48,6 +62,16 @@ const Header = () => {
         
         {user ? (
           <div className="flex items-center gap-2">
+            {refreshData && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleRefresh}
+                title="Refresh data"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            )}
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <UserCircle className="h-5 w-5" />
               <span>{user.email}</span>

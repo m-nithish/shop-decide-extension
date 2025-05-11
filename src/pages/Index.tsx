@@ -11,11 +11,11 @@ import { useProducts } from '@/context/ProductsContext';
 import { useAuth } from '@/context/AuthContext';
 
 const Index = () => {
-  const { products, collections, fetchUserProducts, fetchUserCollections, isLoading } = useProducts();
+  const { products, collections, fetchUserProducts, fetchUserCollections, isLoading, collectionsLoaded, productsLoaded } = useProducts();
   const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   
   // Get tab from URL query params if available
   const queryParams = new URLSearchParams(location.search);
@@ -31,20 +31,20 @@ const Index = () => {
     }
   }, [tabParam]);
   
-  // Fetch user data when user auth state changes
-  useEffect(() => {
+  // Manually trigger data fetch when needed
+  const refreshData = () => {
     if (user) {
       fetchUserProducts();
       fetchUserCollections();
     }
-  }, [user, fetchUserProducts, fetchUserCollections]);
+  };
 
   const handleLogin = () => {
     navigate('/auth');
   };
   
   // Show login prompt if no user is authenticated
-  if (!user) {
+  if (!user && !authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Header />
@@ -71,9 +71,21 @@ const Index = () => {
     );
   }
   
+  // Show loading state while authentication is being determined
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header />
+        <main className="flex-grow container px-4 py-12 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-theme-purple"></div>
+        </main>
+      </div>
+    );
+  }
+  
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
+      <Header refreshData={refreshData} />
       
       <main className="flex-grow container px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -126,7 +138,7 @@ const Index = () => {
               <div className="flex justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-theme-purple"></div>
               </div>
-            ) : products.length === 0 ? (
+            ) : products.length === 0 && productsLoaded ? (
               <div className="bg-white rounded-lg border border-dashed border-gray-300 p-12 text-center">
                 <div className="mx-auto w-16 h-16 bg-theme-lavender rounded-full flex items-center justify-center mb-4">
                   <Plus className="h-8 w-8 text-theme-purple" />
@@ -157,7 +169,7 @@ const Index = () => {
               <div className="flex justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-theme-purple"></div>
               </div>
-            ) : collections.length === 0 ? (
+            ) : collections.length === 0 && collectionsLoaded ? (
               <div className="bg-white rounded-lg border border-dashed border-gray-300 p-12 text-center">
                 <div className="mx-auto w-16 h-16 bg-theme-lavender rounded-full flex items-center justify-center mb-4">
                   <Folder className="h-8 w-8 text-theme-purple" />

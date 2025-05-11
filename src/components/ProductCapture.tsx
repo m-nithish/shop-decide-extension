@@ -16,7 +16,7 @@ import { ensureUUID } from '@/utils/supabaseHelpers';
 const ProductCapture: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { collections, addProduct, fetchUserCollections } = useProducts();
+  const { collections, addProduct, fetchUserCollections, collectionsLoaded } = useProducts();
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -31,20 +31,28 @@ const ProductCapture: React.FC = () => {
   });
   
   const [isLoading, setIsLoading] = useState(false);
+  const [collectionsLoading, setCollectionsLoading] = useState(true);
   
-  // Load user collections when component mounts or when the user changes
+  // Load user collections when component mounts
   useEffect(() => {
-    if (user) {
-      fetchUserCollections().catch(err => {
-        console.error('Failed to load collections:', err);
-        toast({
-          variant: 'destructive',
-          title: 'Failed to load collections',
-          description: 'There was an error loading your collections. Please try again later.'
+    if (user && !collectionsLoaded) {
+      setCollectionsLoading(true);
+      fetchUserCollections()
+        .catch(err => {
+          console.error('Failed to load collections:', err);
+          toast({
+            variant: 'destructive',
+            title: 'Failed to load collections',
+            description: 'There was an error loading your collections. Please try again later.'
+          });
+        })
+        .finally(() => {
+          setCollectionsLoading(false);
         });
-      });
+    } else {
+      setCollectionsLoading(false);
     }
-  }, [user, fetchUserCollections, toast]);
+  }, [user, collectionsLoaded, fetchUserCollections, toast]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -133,22 +141,30 @@ const ProductCapture: React.FC = () => {
           
           <div className="space-y-2">
             <Label htmlFor="collection">Collection</Label>
-            <Select 
-              value={formData.collectionId || 'none'} 
-              onValueChange={handleCollectionChange}
-            >
-              <SelectTrigger id="collection">
-                <SelectValue placeholder="Select a collection" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Uncategorized</SelectItem>
-                {collections.map(collection => (
-                  <SelectItem key={collection.id} value={collection.id}>
-                    {collection.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {collectionsLoading ? (
+              <div className="flex items-center space-x-2 h-10 px-3 border rounded-md">
+                <span className="text-gray-500">Loading collections...</span>
+                <div className="ml-auto animate-spin h-4 w-4 border-t-2 border-theme-purple rounded-full"></div>
+              </div>
+            ) : (
+              <Select 
+                value={formData.collectionId || 'none'} 
+                onValueChange={handleCollectionChange}
+                disabled={collectionsLoading}
+              >
+                <SelectTrigger id="collection">
+                  <SelectValue placeholder="Select a collection" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Uncategorized</SelectItem>
+                  {collections.map(collection => (
+                    <SelectItem key={collection.id} value={collection.id}>
+                      {collection.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
@@ -159,7 +175,11 @@ const ProductCapture: React.FC = () => {
           >
             Cancel
           </Button>
-          <Button type="submit" className="bg-theme-purple hover:bg-theme-purple/90" disabled={isLoading}>
+          <Button 
+            type="submit" 
+            className="bg-theme-purple hover:bg-theme-purple/90" 
+            disabled={isLoading || collectionsLoading}
+          >
             {isLoading ? 'Saving...' : 'Add Product'}
           </Button>
         </CardFooter>

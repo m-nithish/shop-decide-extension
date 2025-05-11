@@ -1,5 +1,4 @@
-
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Product, Collection } from '../types';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -32,6 +31,8 @@ interface ProductsContextProps {
   fetchUserProducts: () => Promise<void>;
   getProduct: (id: string) => Promise<Product | undefined>;
   isLoading: boolean;
+  collectionsLoaded: boolean;
+  productsLoaded: boolean;
 }
 
 const ProductsContext = createContext<ProductsContextProps | undefined>(undefined);
@@ -40,25 +41,16 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [products, setProducts] = useState<Product[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [collectionsLoaded, setCollectionsLoaded] = useState<boolean>(false);
+  const [productsLoaded, setProductsLoaded] = useState<boolean>(false);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
 
-  // Load user data when user changes
-  useEffect(() => {
-    if (user) {
-      fetchUserCollections();
-      fetchUserProducts();
-    } else {
-      // Clear data when no user is logged in
-      setProducts([]);
-      setCollections([]);
-    }
-  }, [user]);
-
-  // Fetch user collections from Supabase
-  const fetchUserCollections = async () => {
+  // Memoize the fetch functions to prevent recreation on re-renders
+  const fetchUserCollections = useCallback(async () => {
     if (!user) {
       setCollections([]);
+      setCollectionsLoaded(true);
       return;
     }
     
@@ -93,13 +85,14 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       console.error('Error in fetchUserCollections:', err);
     } finally {
       setIsLoading(false);
+      setCollectionsLoaded(true);
     }
-  };
+  }, [user, toast]);
 
-  // Fetch user products from Supabase
-  const fetchUserProducts = async () => {
+  const fetchUserProducts = useCallback(async () => {
     if (!user) {
       setProducts([]);
+      setProductsLoaded(true);
       return;
     }
     
@@ -137,8 +130,30 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       console.error('Error in fetchUserProducts:', err);
     } finally {
       setIsLoading(false);
+      setProductsLoaded(true);
     }
-  };
+  }, [user, toast]);
+
+  // Load user data when user auth state is resolved and not loading
+  useEffect(() => {
+    if (!authLoading) {
+      if (user) {
+        // Only fetch if not already loaded or if user changed
+        if (!collectionsLoaded) {
+          fetchUserCollections();
+        }
+        if (!productsLoaded) {
+          fetchUserProducts();
+        }
+      } else {
+        // Clear data when no user is logged in
+        setProducts([]);
+        setCollections([]);
+        setCollectionsLoaded(false);
+        setProductsLoaded(false);
+      }
+    }
+  }, [user, authLoading, collectionsLoaded, productsLoaded, fetchUserCollections, fetchUserProducts]);
 
   const getProduct = async (id: string): Promise<Product | undefined> => {
     if (!user) return undefined;
@@ -435,7 +450,9 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         fetchUserCollections,
         fetchUserProducts,
         getProduct,
-        isLoading
+        isLoading,
+        collectionsLoaded,
+        productsLoaded
       }}
     >
       {children}
