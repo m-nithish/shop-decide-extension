@@ -4,6 +4,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { useProducts } from '@/context/ProductsContext';
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
 import { 
   GetProductNoteParams, 
   ProductNote,
@@ -19,41 +20,51 @@ import ProductImage from '@/components/product-detail/ProductImage';
 import ProductInfo from '@/components/product-detail/ProductInfo';
 import ProductDetailSidebar from '@/components/product-detail/ProductDetailSidebar';
 import { callRPC } from '@/utils/supabaseHelpers';
-import { getProduct } from '@/services/collectionService';
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { products, getCollection, deleteProduct } = useProducts();
+  const { getProduct, getCollection, deleteProduct } = useProducts();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [product, setProduct] = useState<any>(null);
   const [notes, setNotes] = useState("");
   const [productLinks, setProductLinks] = useState<ProductLink[]>([]);
   const [externalSources, setExternalSources] = useState<ExternalSource[]>([]);
-  
-  const product = products.find(p => p.id === id);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
+    // Redirect to login if not authenticated
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    
+    // Load product data
     if (id) {
       loadProductData();
     }
-  }, [id]);
+  }, [id, user, navigate]);
 
   const loadProductData = async () => {
-    if (!id) return;
+    if (!id || !user) return;
     
+    setIsLoading(true);
     try {
-      // Try to get product from database
-      const { data: productData, error: productError } = await getProduct(id);
+      // Get product data
+      const productData = await getProduct(id);
       
-      if (productError) {
-        console.error('Error loading product:', productError);
+      if (!productData) {
         toast({
           variant: "destructive",
           title: "Error",
           description: "Failed to load product"
         });
+        navigate('/');
         return;
       }
+      
+      setProduct(productData);
       
       const notesParams: GetProductNoteParams = { p_product_id: id };
       const { data: notesData, error: notesError } = await callRPC<ProductNote[], GetProductNoteParams>(
@@ -109,6 +120,9 @@ const ProductDetail = () => {
         title: "Error",
         description: "Failed to load product data"
       });
+      navigate('/');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -121,6 +135,17 @@ const ProductDetail = () => {
   const handleExternalSourcesChange = (updatedSources: ExternalSource[]) => {
     setExternalSources(updatedSources);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header />
+        <div className="container px-4 py-12 flex justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-theme-purple"></div>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -139,8 +164,8 @@ const ProductDetail = () => {
   
   const collection = product.collectionId ? getCollection(product.collectionId) : undefined;
   
-  const handleDelete = () => {
-    deleteProduct(product.id);
+  const handleDelete = async () => {
+    await deleteProduct(product.id);
     navigate('/');
   };
   

@@ -1,60 +1,74 @@
 
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from './ui/button';
-import { Plus, LogOut } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui/button';
+import { LogOut, UserCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from './ui/use-toast';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const Header = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { toast } = useToast();
 
-  const handleLogout = async () => {
+  const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
-      navigate('/auth');
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Sign out failed',
+          description: error.message,
+        });
+      } else {
+        toast({
+          title: 'Signed out',
+          description: 'You have been signed out successfully.',
+        });
+        navigate('/auth');
+      }
     } catch (error) {
+      console.error('Sign out error:', error);
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to log out"
+        variant: 'destructive',
+        title: 'Sign out failed',
+        description: 'An unexpected error occurred.',
       });
     }
   };
-
+  
   return (
-    <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 py-4">
-      <div className="container mx-auto px-4 flex justify-between items-center">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-theme-purple/20 flex items-center justify-center">
-            <span className="text-theme-purple font-bold">L</span>
-          </div>
-          <h1 className="text-xl font-bold text-gray-800">Link-it</h1>
+    <header className="bg-white border-b">
+      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <Link to="/" className="font-semibold text-lg text-theme-purple flex items-center">
+          <span className="bg-theme-purple text-white px-2 py-1 rounded-md mr-2">L</span>
+          Link-it Organize-it
         </Link>
         
-        <div className="flex items-center gap-4">
-          {user ? (
-            <>
-              <Link to="/add-product">
-                <Button className="bg-theme-purple hover:bg-theme-purple/90">
-                  <Plus className="mr-2 h-4 w-4" /> Add Product
-                </Button>
-              </Link>
-              <Button variant="outline" onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" /> Logout
-              </Button>
-            </>
-          ) : (
-            <Link to="/auth">
-              <Button className="bg-theme-purple hover:bg-theme-purple/90">
-                Sign In
-              </Button>
-            </Link>
-          )}
-        </div>
+        {user ? (
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <UserCircle className="h-5 w-5" />
+              <span>{user.email}</span>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleSignOut}
+            >
+              <LogOut className="h-4 w-4 mr-2" /> Sign Out
+            </Button>
+          </div>
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/auth')}
+          >
+            Sign In
+          </Button>
+        )}
       </div>
     </header>
   );

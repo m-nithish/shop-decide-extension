@@ -20,6 +20,12 @@ const CollectionDetail = () => {
   const collection = collections.find(c => c.id === id);
   
   useEffect(() => {
+    // Redirect to login if not authenticated
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    
     const loadProducts = async () => {
       if (id) {
         setIsLoading(true);
@@ -35,7 +41,18 @@ const CollectionDetail = () => {
     };
     
     loadProducts();
-  }, [id, getProductsByCollection]);
+  }, [id, getProductsByCollection, user, navigate]);
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header />
+        <div className="container px-4 py-12 flex justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-theme-purple"></div>
+        </div>
+      </div>
+    );
+  }
   
   if (!collection) {
     return (
@@ -113,11 +130,7 @@ const CollectionDetail = () => {
           )}
         </div>
         
-        {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-theme-purple"></div>
-          </div>
-        ) : products.length === 0 ? (
+        {products.length === 0 ? (
           <div className="bg-white rounded-lg border border-dashed border-gray-300 p-12 text-center">
             <div className="mx-auto w-16 h-16 bg-theme-lavender rounded-full flex items-center justify-center mb-4">
               <Plus className="h-8 w-8 text-theme-purple" />

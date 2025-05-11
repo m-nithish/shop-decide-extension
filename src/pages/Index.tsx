@@ -1,18 +1,21 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Grid2X2, List, Folder, Plus } from 'lucide-react';
+import { Grid2X2, List, Folder, Plus, LogIn } from 'lucide-react';
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
 import CollectionCard from '@/components/CollectionCard';
 import { useProducts } from '@/context/ProductsContext';
+import { useAuth } from '@/context/AuthContext';
 
 const Index = () => {
-  const { products, collections } = useProducts();
+  const { products, collections, fetchUserProducts, fetchUserCollections, isLoading } = useProducts();
   const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   
   // Get tab from URL query params if available
   const queryParams = new URLSearchParams(location.search);
@@ -27,6 +30,46 @@ const Index = () => {
       setActiveTab('products');
     }
   }, [tabParam]);
+  
+  // Fetch user data when user auth state changes
+  useEffect(() => {
+    if (user) {
+      fetchUserProducts();
+      fetchUserCollections();
+    }
+  }, [user, fetchUserProducts, fetchUserCollections]);
+
+  const handleLogin = () => {
+    navigate('/auth');
+  };
+  
+  // Show login prompt if no user is authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header />
+        <main className="flex-grow container px-4 py-12 flex items-center justify-center">
+          <div className="text-center max-w-md mx-auto">
+            <h1 className="text-3xl font-bold mb-4">Welcome to Link-it Organize-it</h1>
+            <p className="mb-8 text-gray-600">
+              Please sign in to view and manage your products and collections.
+            </p>
+            <Button 
+              onClick={handleLogin}
+              className="bg-theme-purple hover:bg-theme-purple/90"
+            >
+              <LogIn className="h-4 w-4 mr-2" /> Sign In
+            </Button>
+          </div>
+        </main>
+        <footer className="bg-white border-t py-6">
+          <div className="container px-4 text-center text-sm text-gray-500">
+            <p>Link-it Organize-it. Developed with Lovable.</p>
+          </div>
+        </footer>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -79,7 +122,11 @@ const Index = () => {
           </div>
           
           <TabsContent value="products" className="mt-0">
-            {products.length === 0 ? (
+            {isLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-theme-purple"></div>
+              </div>
+            ) : products.length === 0 ? (
               <div className="bg-white rounded-lg border border-dashed border-gray-300 p-12 text-center">
                 <div className="mx-auto w-16 h-16 bg-theme-lavender rounded-full flex items-center justify-center mb-4">
                   <Plus className="h-8 w-8 text-theme-purple" />
@@ -106,7 +153,11 @@ const Index = () => {
           </TabsContent>
           
           <TabsContent value="collections" className="mt-0">
-            {collections.length === 0 ? (
+            {isLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-theme-purple"></div>
+              </div>
+            ) : collections.length === 0 ? (
               <div className="bg-white rounded-lg border border-dashed border-gray-300 p-12 text-center">
                 <div className="mx-auto w-16 h-16 bg-theme-lavender rounded-full flex items-center justify-center mb-4">
                   <Folder className="h-8 w-8 text-theme-purple" />
