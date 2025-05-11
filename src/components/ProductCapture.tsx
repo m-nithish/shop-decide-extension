@@ -32,12 +32,19 @@ const ProductCapture: React.FC = () => {
   
   const [isLoading, setIsLoading] = useState(false);
   
-  // Load user collections if authenticated
+  // Load user collections when component mounts or when the user changes
   useEffect(() => {
     if (user) {
-      fetchUserCollections();
+      fetchUserCollections().catch(err => {
+        console.error('Failed to load collections:', err);
+        toast({
+          variant: 'destructive',
+          title: 'Failed to load collections',
+          description: 'There was an error loading your collections. Please try again later.'
+        });
+      });
     }
-  }, [user, fetchUserCollections]);
+  }, [user, fetchUserCollections, toast]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

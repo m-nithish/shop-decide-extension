@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProductsProvider } from './context/ProductsContext';
 import { Toaster } from "@/components/ui/toaster";
 
@@ -16,9 +16,7 @@ import Auth from "./pages/Auth";
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  // This should use AuthContext to check if user is authenticated
-  // and redirect to login if not
-  const { user } = require('./context/AuthContext').useAuth();
+  const { user } = useAuth();
   
   if (!user) {
     return <Navigate to="/auth" replace />;
