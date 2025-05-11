@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Product } from '@/types';
-import { Link as LinkIcon } from 'lucide-react';
+import { ImageOff } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -17,11 +17,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete }) => {
   return (
     <Card className="product-card overflow-hidden h-full flex flex-col bg-white">
       <div className="relative aspect-[4/3] overflow-hidden">
-        <img 
-          src={product.imageUrl} 
-          alt={product.title} 
-          className="w-full h-full object-cover transition-all hover:scale-105"
-        />
+        {product.imageUrl ? (
+          <img 
+            src={product.imageUrl} 
+            alt={product.title} 
+            className="w-full h-full object-cover transition-all hover:scale-105"
+            onError={(e) => {
+              // Replace broken image with placeholder
+              e.currentTarget.src = 'https://placehold.co/600x400/f1f1f1/555555?text=No+Image';
+            }}
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+            <ImageOff className="h-12 w-12 text-gray-400" />
+          </div>
+        )}
         <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-semibold text-gray-700">
           {product.price}
         </div>
@@ -36,18 +46,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete }) => {
         </div>
       </CardContent>
       
-      <CardFooter className="border-t p-4 flex gap-2">
-        <Link to={`/product/${product.id}`} className="flex-grow">
+      <CardFooter className="border-t p-4">
+        <Link to={`/product/${product.id}`} className="w-full">
           <Button variant="secondary" className="w-full">View Details</Button>
         </Link>
-        <Button
-          variant="outline"
-          size="icon"
-          className="flex-shrink-0"
-          onClick={() => window.open(product.productUrl, '_blank')}
-        >
-          <LinkIcon className="h-4 w-4" />
-        </Button>
       </CardFooter>
     </Card>
   );

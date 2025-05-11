@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Collection } from '@/types';
 import { Folder } from 'lucide-react';
+import { callRPC } from '@/utils/supabaseHelpers';
 
 interface CollectionCardProps {
   collection: Collection;
@@ -13,6 +14,27 @@ interface CollectionCardProps {
 
 const CollectionCard: React.FC<CollectionCardProps> = ({ collection, onDelete }) => {
   const formattedDate = new Date(collection.createdAt).toLocaleDateString();
+  const [productCount, setProductCount] = useState<number>(collection.productCount || 0);
+  
+  useEffect(() => {
+    // Fetch the actual product count for this collection
+    const fetchProductCount = async () => {
+      try {
+        const { data } = await callRPC<any[], { p_collection_id: string }>(
+          'get_products_by_collection',
+          { p_collection_id: collection.id }
+        );
+        
+        if (data) {
+          setProductCount(data.length);
+        }
+      } catch (err) {
+        console.error('Error fetching product count:', err);
+      }
+    };
+    
+    fetchProductCount();
+  }, [collection.id]);
   
   return (
     <Card className="product-card overflow-hidden h-full flex flex-col bg-white">
@@ -28,7 +50,7 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ collection, onDelete })
         <p className="text-sm text-gray-500 mb-3 line-clamp-2">{collection.description}</p>
         <div className="flex items-center justify-between text-xs text-gray-500">
           <span>Created: {formattedDate}</span>
-          <span>{collection.productCount || 0} products</span>
+          <span>{productCount} products</span>
         </div>
       </CardContent>
       

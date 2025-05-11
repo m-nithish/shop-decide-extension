@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,10 +8,13 @@ import ProductCard from '@/components/ProductCard';
 import CollectionCard from '@/components/CollectionCard';
 import { useProducts } from '@/context/ProductsContext';
 import { useAuth } from '@/context/AuthContext';
+import { Toggle } from '@/components/ui/toggle';
 
 const Index = () => {
   const { products, collections, fetchUserProducts, fetchUserCollections, isLoading, collectionsLoaded, productsLoaded } = useProducts();
-  const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
+  const [viewType, setViewType] = useState<'grid' | 'list'>(
+    localStorage.getItem('viewType') === 'list' ? 'list' : 'grid'
+  );
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
@@ -31,6 +33,11 @@ const Index = () => {
     }
   }, [tabParam]);
   
+  // Update local storage when view type changes
+  useEffect(() => {
+    localStorage.setItem('viewType', viewType);
+  }, [viewType]);
+  
   // Manually trigger data fetch when needed
   const refreshData = () => {
     if (user) {
@@ -41,6 +48,10 @@ const Index = () => {
 
   const handleLogin = () => {
     navigate('/auth');
+  };
+  
+  const handleViewChange = (newView: 'grid' | 'list') => {
+    setViewType(newView);
   };
   
   // Show login prompt if no user is authenticated
@@ -96,23 +107,19 @@ const Index = () => {
             </TabsList>
             
             <div className="flex gap-2">
-              <div className="border rounded-md overflow-hidden">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={viewType === 'grid' ? 'bg-muted' : ''}
-                  onClick={() => setViewType('grid')}
+              <div className="border rounded-md overflow-hidden flex">
+                <Toggle
+                  pressed={viewType === 'grid'}
+                  onPressedChange={() => handleViewChange('grid')}
                 >
                   <Grid2X2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={viewType === 'list' ? 'bg-muted' : ''}
-                  onClick={() => setViewType('list')}
+                </Toggle>
+                <Toggle
+                  pressed={viewType === 'list'}
+                  onPressedChange={() => handleViewChange('list')}
                 >
                   <List className="h-4 w-4" />
-                </Button>
+                </Toggle>
               </div>
               
               <TabsContent value="products" className="m-0">
@@ -183,7 +190,11 @@ const Index = () => {
                 </Link>
               </div>
             ) : (
-              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              <div className={`grid gap-6 ${
+                viewType === 'grid' 
+                  ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4' 
+                  : 'grid-cols-1'
+              }`}>
                 {collections.map(collection => (
                   <CollectionCard key={collection.id} collection={collection} />
                 ))}
