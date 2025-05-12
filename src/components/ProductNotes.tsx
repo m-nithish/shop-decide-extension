@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Edit, Plus } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { SaveProductNotesParams } from "@/types/supabase";
 import { callRPC } from '@/utils/supabaseHelpers';
@@ -47,50 +47,61 @@ const ProductNotes = ({ productId, initialNotes = '' }: ProductNotesProps) => {
     }
   };
 
-  if (!user) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>My Notes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-500 text-center py-4">
-            Please sign in to add notes.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
+  const showEmptyState = !notes && !isEditing;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>My Notes</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isEditing ? (
-          <div className="space-y-4">
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add your notes about this product..."
-              className="min-h-[150px]"
-            />
-            <div className="flex gap-2">
-              <Button onClick={handleSaveNotes}>Save Notes</Button>
-              <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
+    <div className="space-y-4">
+      {isEditing ? (
+        <div className="space-y-4">
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Add your notes about this product (size, color, where you'll use it, etc.)"
+            className="min-h-[150px]"
+          />
+          <div className="flex gap-2">
+            <Button onClick={handleSaveNotes}>Save Notes</Button>
+            <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {showEmptyState ? (
+            <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+              <p className="text-gray-500 mb-4">
+                No notes yet. Click the button below to add your notes about this product.
+              </p>
+              {user && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Note
+                </Button>
+              )}
             </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <p className="text-gray-700 whitespace-pre-wrap">
-              {notes || "No notes yet. Click edit to add your notes about this product."}
-            </p>
-            <Button variant="outline" onClick={() => setIsEditing(true)}>Edit Notes</Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          ) : (
+            <>
+              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <p className="text-gray-700 whitespace-pre-wrap">{notes}</p>
+              </div>
+              {user && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Notes
+                </Button>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 

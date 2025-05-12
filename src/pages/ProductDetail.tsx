@@ -179,10 +179,20 @@ const ProductDetail = () => {
           onDelete={handleDelete}
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <ProductImage imageUrl={product.imageUrl} title={product.title} />
-            <ProductInfo product={product} collection={collection} />
+        <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-1">
+              <ProductImage imageUrl={product.imageUrl} title={product.title} />
+            </div>
+            
+            <div className="md:col-span-2">
+              <ProductInfo 
+                product={product} 
+                collection={collection}
+                notes={notes}
+                productId={id!} 
+              />
+            </div>
           </div>
           
           <ProductDetailSidebar 

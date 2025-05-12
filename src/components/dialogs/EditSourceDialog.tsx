@@ -20,10 +20,13 @@ interface EditSourceDialogProps {
   onSourceUpdated: (source: ExternalSource) => void;
 }
 
+const sourceTypes = ['youtube', 'pinterest', 'other', 'link', 'article', 'review'] as const;
+type SourceType = typeof sourceTypes[number];
+
 const formSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
   url: z.string().url({ message: 'Please enter a valid URL' }),
-  sourceType: z.enum(['youtube', 'pinterest', 'other', 'link', 'article', 'review']),
+  sourceType: z.enum(sourceTypes),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -36,7 +39,7 @@ const EditSourceDialog = ({ open, onOpenChange, productId, source, onSourceUpdat
     defaultValues: {
       title: source.title || '',
       url: source.url || '',
-      sourceType: source.source_type || 'link',
+      sourceType: (source.source_type as SourceType) || 'link',
     },
   });
 
@@ -46,7 +49,7 @@ const EditSourceDialog = ({ open, onOpenChange, productId, source, onSourceUpdat
         p_source_id: string;
         p_title: string;
         p_url: string;
-        p_source_type: string;
+        p_source_type: SourceType;
       }>(
         'update_external_source',
         {

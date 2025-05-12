@@ -1,4 +1,3 @@
-
 // Define request parameter types and response types for all our Supabase RPC functions
 
 // Product Notes types
@@ -57,7 +56,7 @@ export type ProductLink = {
   price: number | null;
   rating: number | null;
   review_count: number | null;
-  comments?: string;
+  comments: string | null;
   created_at: string;
   updated_at: string;
 };

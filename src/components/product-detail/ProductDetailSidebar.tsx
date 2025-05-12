@@ -8,6 +8,9 @@ import AddLinkDialog from '@/components/dialogs/AddLinkDialog';
 import AddSourceDialog from '@/components/dialogs/AddSourceDialog';
 import EditLinkDialog from '@/components/dialogs/EditLinkDialog';
 import EditSourceDialog from '@/components/dialogs/EditSourceDialog';
+import CollapsibleSection from './CollapsibleSection';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ProductDetailSidebarProps {
   productId: string;
@@ -98,20 +101,44 @@ const ProductDetailSidebar = ({
   };
 
   return (
-    <div className="space-y-8">
-      <ProductNotes productId={productId} initialNotes={notes} />
-      <ProductLinksTable 
-        links={productLinks} 
-        onAddLink={handleAddLink}
-        onDeleteLink={handleLinkDeleted}
-        onEditLink={handleEditLink}
-      />
-      <ExternalSources 
-        sources={externalSources} 
-        onAddSource={handleAddSource}
-        onDeleteSource={handleSourceDeleted}
-        onEditSource={handleEditSource}
-      />
+    <div className="space-y-6">
+      <CollapsibleSection title="My Notes" defaultOpen={true}>
+        <ProductNotes productId={productId} initialNotes={notes} />
+      </CollapsibleSection>
+      
+      <CollapsibleSection 
+        title="Product Comparison" 
+        defaultOpen={true} 
+        action={
+          <Button size="sm" variant="outline" onClick={handleAddLink} className="flex items-center">
+            <Plus className="h-4 w-4 mr-1" /> Add
+          </Button>
+        }
+      >
+        <ProductLinksTable 
+          links={productLinks} 
+          onAddLink={handleAddLink}
+          onDeleteLink={handleLinkDeleted}
+          onEditLink={handleEditLink}
+        />
+      </CollapsibleSection>
+      
+      <CollapsibleSection 
+        title="External Sources" 
+        defaultOpen={true}
+        action={
+          <Button size="sm" variant="outline" onClick={handleAddSource} className="flex items-center">
+            <Plus className="h-4 w-4 mr-1" /> Add
+          </Button>
+        }
+      >
+        <ExternalSources 
+          sources={externalSources} 
+          onAddSource={handleAddSource}
+          onDeleteSource={handleSourceDeleted}
+          onEditSource={handleEditSource}
+        />
+      </CollapsibleSection>
       
       <AddLinkDialog 
         open={isLinkDialogOpen} 

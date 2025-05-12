@@ -101,7 +101,7 @@ const EditLinkDialog = ({ open, onOpenChange, productId, link, onLinkUpdated }: 
           price: data.price ? parseFloat(data.price) : null,
           rating: data.rating ? parseFloat(data.rating) : null,
           review_count: data.reviewCount ? parseInt(data.reviewCount, 10) : null,
-          comments: data.comments,
+          comments: data.comments || null,
         });
       }
 
