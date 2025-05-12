@@ -13,6 +13,7 @@ import BulletList from '@tiptap/extension-bullet-list';
 import ListItem from '@tiptap/extension-list-item';
 import OrderedList from '@tiptap/extension-ordered-list';
 import Heading from '@tiptap/extension-heading';
+import Placeholder from '@tiptap/extension-placeholder';
 
 interface RichTextNotesProps {
   productId: string;
@@ -90,10 +91,12 @@ const RichTextNotes = ({ productId, initialNotes = '' }: RichTextNotesProps) => 
       Heading.configure({
         levels: [2, 3]
       }),
+      Placeholder.configure({
+        placeholder: 'Add your color preference, size requirements, or other criteria...'
+      })
     ],
     content: initialNotes,
     editable: isEditing,
-    placeholder: "Add your color preference, size requirements, or other criteria...",
   });
   
   // Update editor content when initialNotes changes
@@ -150,8 +153,7 @@ const RichTextNotes = ({ productId, initialNotes = '' }: RichTextNotesProps) => 
           <MenuBar editor={editor} />
           <EditorContent 
             editor={editor}
-            className="min-h-[200px] prose max-w-none prose-sm prose-stone focus:outline-none border border-gray-200 rounded-md p-3 shadow-inner"
-            placeholder="Add your color preference, size requirements, or other criteria..."
+            className="min-h-[200px] prose max-w-none prose-sm prose-stone focus:outline-none border border-gray-200 rounded-md p-4 shadow-inner"
           />
           <div className="flex gap-2 mt-3 pt-2 border-t">
             <Button onClick={handleSaveNotes} className="flex items-center gap-2">

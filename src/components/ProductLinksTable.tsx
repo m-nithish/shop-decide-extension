@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
   ExternalLink, Trash, Edit, Star, MessageSquare, ChevronUp, ChevronDown,
-  Eye, Link as LinkIcon, MessageCircle, Info
+  Eye, Link as LinkIcon, MessageCircle, Info, Image
 } from 'lucide-react';
 import { ProductLink } from '@/types/supabase';
 import { useAuth } from '@/context/AuthContext';
@@ -45,17 +45,52 @@ const LinkPreview = ({ url, title }: { url: string, title: string }) => {
       return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
     };
 
+    const getOgImage = (domain: string) => {
+      // Get placeholder image based on domain
+      if (domain.includes('amazon')) {
+        return 'https://m.media-amazon.com/images/G/01/social_share/amazon_logo._CB633266945_.png';
+      } else if (domain.includes('youtube')) {
+        // For YouTube links, try to extract video ID and get thumbnail
+        try {
+          const url = new URL(url);
+          const videoId = url.searchParams.get('v');
+          if (videoId) {
+            return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+          }
+        } catch (e) {
+          // Fall back to default image
+        }
+        return 'https://www.youtube.com/img/desktop/yt_1200.png';
+      } else if (domain.includes('pinterest')) {
+        return 'https://s.pinimg.com/webapp/logo_trans-180x180.png';
+      } else if (domain.includes('etsy')) {
+        return 'https://www.etsy.com/images/etsy_logo_1200x630.png';
+      } else if (domain.includes('wayfair')) {
+        return 'https://assets.wfcdn.com/asset/image/wayfair-share.jpg';
+      } else if (domain.includes('homedepot')) {
+        return 'https://assets.thdstatic.com/images/v1/brand-logos/the-home-depot.png';
+      } else if (domain.includes('walmart')) {
+        return 'https://i5.walmartimages.com/dfw/63fd9f59-b3e1/7a569e53-f29a-4c3d-bfaf-6f7a158bfadd/v1/walmartLogo.svg';
+      } else if (domain.includes('target')) {
+        return 'https://target.scene7.com/is/content/Target/GUEST_ceb549a5-ad82-4b29-b5c3-a1dd168add9c';
+      } else {
+        // Generic placeholder for other sites
+        return `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128`;
+      }
+    };
+
     try {
       setLoading(true);
       setError(false);
       const domain = new URL(url).hostname;
       const favicon = getFavicon(domain);
+      const ogImage = getOgImage(domain);
       
-      // Simple preview with favicon and OG metadata
       setPreview({
         title: title,
         description: `Link to ${domain}`,
-        favicon: favicon
+        favicon: favicon,
+        image: ogImage
       });
       setLoading(false);
     } catch (err) {
@@ -90,39 +125,62 @@ const LinkPreview = ({ url, title }: { url: string, title: string }) => {
   return (
     <div className="w-full">
       <div className="flex flex-col gap-3">
-        {preview.favicon && (
-          <img 
-            src={preview.favicon} 
-            alt="" 
-            className="w-8 h-8 rounded"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-        )}
-        <div>
-          <h3 className="font-medium text-sm">{preview.title || title}</h3>
-          <p className="text-xs text-gray-500">{preview.description}</p>
-          <div className="text-xs text-blue-500 mt-1 truncate max-w-[250px] overflow-hidden text-ellipsis">
-            {url}
+        <div className="flex items-center gap-2">
+          {preview.favicon && (
+            <img 
+              src={preview.favicon} 
+              alt="" 
+              className="w-8 h-8 rounded"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          )}
+          <div>
+            <h3 className="font-medium text-sm">{preview.title || title}</h3>
+            <p className="text-xs text-gray-500">{preview.description}</p>
           </div>
-          
-          {/* Preview iframe */}
-          <div className="mt-3 border rounded overflow-hidden">
-            <div className="bg-gray-100 p-1 flex items-center justify-between border-b">
-              <div className="text-xs truncate max-w-[180px]">{new URL(url).hostname}</div>
-              <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={handleOpenLink}>
-                <ExternalLink className="h-3 w-3" />
-              </Button>
-            </div>
-            <div className="aspect-video bg-white flex items-center justify-center">
+        </div>
+
+        <div className="text-xs text-blue-500 mt-1 truncate max-w-[250px] overflow-hidden text-ellipsis">
+          {url}
+        </div>
+        
+        {/* Preview iframe with image */}
+        <div className="mt-3 border rounded overflow-hidden">
+          <div className="bg-gray-100 p-1 flex items-center justify-between border-b">
+            <div className="text-xs truncate max-w-[180px]">{new URL(url).hostname}</div>
+            <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={handleOpenLink}>
+              <ExternalLink className="h-3 w-3" />
+            </Button>
+          </div>
+          <div className="aspect-video bg-gray-50 flex items-center justify-center overflow-hidden">
+            {preview.image ? (
+              <div className="w-full h-full relative">
+                <img 
+                  src={preview.image} 
+                  alt={title} 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // If image fails, show fallback
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement?.classList.add('fallback-image');
+                  }}
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent text-white p-2">
+                  <Button size="sm" variant="secondary" className="w-full mt-auto" onClick={handleOpenLink}>
+                    Visit Link
+                  </Button>
+                </div>
+              </div>
+            ) : (
               <div className="text-center p-4">
-                <LinkIcon className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                <Image className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                 <Button size="sm" variant="outline" className="mt-2" onClick={handleOpenLink}>
                   Visit Link
                 </Button>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
