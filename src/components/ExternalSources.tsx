@@ -3,12 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Youtube, ExternalLink, Image, Trash, Edit, ChevronUp, ChevronDown } from 'lucide-react';
+import { Youtube, ExternalLink, Image, Trash, Edit, ChevronUp, ChevronDown, Eye, Info } from 'lucide-react';
 import { ExternalSource } from '@/types/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { callRPC } from '@/utils/supabaseHelpers';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 
 interface ExternalSourcesProps {
   sources: ExternalSource[];
@@ -16,6 +17,84 @@ interface ExternalSourcesProps {
   onDeleteSource?: (id: string) => void;
   onEditSource?: (source: ExternalSource) => void;
 }
+
+// Source Preview Component
+const SourcePreview = ({ url, type }: { url: string; type: string }) => {
+  const [preview, setPreview] = useState<{
+    title?: string;
+    image?: string;
+    favicon?: string;
+  }>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const getFavicon = (domain: string) => {
+      return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+    };
+
+    try {
+      setLoading(true);
+      setError(false);
+      const domain = new URL(url).hostname;
+      const favicon = getFavicon(domain);
+      
+      // Simple preview with just favicon for now
+      setPreview({
+        favicon: favicon
+      });
+      setLoading(false);
+    } catch (err) {
+      console.error("Error generating preview:", err);
+      setError(true);
+      setLoading(false);
+    }
+  }, [url, type]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-4">
+        <div className="h-5 w-5 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-4 text-gray-500">
+        <Info className="h-6 w-6 mx-auto mb-2" />
+        <p>Could not load preview</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full">
+      <div className="flex items-start gap-3">
+        {preview.favicon && (
+          <img 
+            src={preview.favicon} 
+            alt="" 
+            className="w-8 h-8 rounded"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        )}
+        <div>
+          <p className="text-xs text-gray-500">
+            {type === 'youtube' ? 'YouTube Video' : 
+             type === 'pinterest' ? 'Pinterest Board' : 
+             'External Resource'}
+          </p>
+          <div className="text-xs text-blue-500 mt-1 truncate">
+            {url}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ExternalSources = ({ sources, onAddSource, onDeleteSource, onEditSource }: ExternalSourcesProps) => {
   const { user } = useAuth();
@@ -194,16 +273,34 @@ const ExternalSources = ({ sources, onAddSource, onDeleteSource, onEditSource }:
               {getSourceIcon(source.source_type, source.url)}
               
               <div className="flex-grow">
-                <a
-                  href={source.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium hover:text-blue-600"
-                >
-                  {source.title}
-                </a>
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium hover:text-blue-600 cursor-pointer"
+                    >
+                      {source.title}
+                    </a>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-80 p-0">
+                    <div className="p-4 bg-white rounded-md shadow-lg border">
+                      <SourcePreview url={source.url} type={source.source_type} />
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
               </div>
               <Badge variant="secondary">{source.source_type}</Badge>
+              
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="p-0 w-7 h-7 rounded-full"
+                onClick={() => window.open(source.url, '_blank')}
+              >
+                <Eye className="h-3.5 w-3.5" />
+              </Button>
               
               {user && onEditSource && (
                 <Button 

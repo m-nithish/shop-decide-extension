@@ -172,15 +172,15 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
-      <main className="flex-grow container px-4 py-8">
+      <main className="flex-grow container px-4 py-6">
         <ProductHeader 
           product={product} 
           collection={collection}
           onDelete={handleDelete}
         />
         
-        <div className="grid grid-cols-1 gap-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-1">
               <ProductImage imageUrl={product.imageUrl} title={product.title} />
             </div>

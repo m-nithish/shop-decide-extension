@@ -7,8 +7,8 @@ import { Product, Collection } from '@/types';
 import { useProducts } from '@/context/ProductsContext';
 import ProductEditForm from './ProductEditForm';
 import { updateProduct } from '@/services/collectionService';
-import { useToast } from '@/components/ui/use-toast';
-import ProductNotes from '@/components/ProductNotes';
+import { useToast } from '@/hooks/use-toast';
+import RichTextNotes from '@/components/RichTextNotes';
 
 interface ProductInfoProps {
   product: Product;
@@ -80,71 +80,67 @@ const ProductInfo = ({ product, collection, notes, productId }: ProductInfoProps
 
   return (
     <Card className="mb-6 border border-gray-200 shadow-sm">
-      <CardHeader className="p-4 border-b bg-gray-50">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-xl">Product Details</CardTitle>
-          <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)} className="flex items-center">
-            <Edit className="h-4 w-4 mr-2" />
-            Edit
-          </Button>
-        </div>
+      <CardHeader className="p-3 border-b bg-gray-50 flex justify-between items-center">
+        <CardTitle className="text-xl">Product Details</CardTitle>
+        <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)} className="flex items-center">
+          <Edit className="h-4 w-4 mr-2" />
+          Edit
+        </Button>
       </CardHeader>
-      <CardContent className="p-4">
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-xl font-bold mb-2">{product.title}</h2>
-            {product.description && (
-              <p className="text-gray-700 mb-4">{product.description}</p>
-            )}
-          </div>
+      <CardContent className="p-4 space-y-4">
+        <div>
+          <h2 className="text-xl font-bold">{product.title}</h2>
+          {product.description && (
+            <p className="text-gray-700 mt-2">{product.description}</p>
+          )}
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          {product.price && (
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Price:</span>
+              <span className="font-medium">{product.price}</span>
+            </div>
+          )}
           
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            {product.price && (
-              <div className="space-y-1">
-                <span className="text-gray-500 block">Price:</span>
-                <span className="font-medium">{product.price}</span>
-              </div>
-            )}
-            
-            {product.sourceName && (
-              <div className="space-y-1">
-                <span className="text-gray-500 block">Source:</span>
-                <span className="font-medium">{product.sourceName}</span>
-              </div>
-            )}
-            
-            {collection && (
-              <div className="space-y-1">
-                <span className="text-gray-500 block">Collection:</span>
-                <div className="flex items-center">
-                  <span 
-                    className="w-3 h-3 rounded-full mr-2"
-                    style={{ backgroundColor: collection.color }}
-                  ></span>
-                  <span className="font-medium">{collection.name}</span>
-                </div>
-              </div>
-            )}
-            
-            {product.dateAdded && (
-              <div className="space-y-1">
-                <span className="text-gray-500 block">Added on:</span>
-                <span className="font-medium">
-                  {new Date(product.dateAdded).toLocaleDateString()}
-                </span>
-              </div>
-            )}
-          </div>
+          {product.sourceName && (
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Source:</span>
+              <span className="font-medium">{product.sourceName}</span>
+            </div>
+          )}
           
-          <div className="pt-4 border-t mt-4">
-            <h3 className="font-medium text-lg mb-3">My Notes</h3>
-            <ProductNotes productId={productId} initialNotes={notes} />
-          </div>
+          {collection && (
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Collection:</span>
+              <div className="flex items-center">
+                <span 
+                  className="w-3 h-3 rounded-full mr-2"
+                  style={{ backgroundColor: collection.color }}
+                ></span>
+                <span className="font-medium">{collection.name}</span>
+              </div>
+            </div>
+          )}
+          
+          {product.dateAdded && (
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Added on:</span>
+              <span className="font-medium">
+                {new Date(product.dateAdded).toLocaleDateString()}
+              </span>
+            </div>
+          )}
+        </div>
+        
+        <div className="pt-3 border-t">
+          <h3 className="font-medium text-lg mb-3">My Notes</h3>
+          <RichTextNotes productId={productId} initialNotes={notes} />
         </div>
       </CardContent>
       
       {product.productUrl && (
-        <CardFooter className="p-4 border-t">
+        <CardFooter className="p-3 border-t">
           <Button 
             className="w-full"
             variant="outline"

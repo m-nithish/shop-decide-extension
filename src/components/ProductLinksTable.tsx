@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -10,13 +10,18 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Trash, Edit, Star, MessageSquare, ChevronUp, ChevronDown } from 'lucide-react';
+import { 
+  ExternalLink, Trash, Edit, Star, MessageSquare, ChevronUp, ChevronDown,
+  Eye, Link as LinkIcon, MessageCircle, Info
+} from 'lucide-react';
 import { ProductLink } from '@/types/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { callRPC } from '@/utils/supabaseHelpers';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface ProductLinksTableProps {
   links: ProductLink[];
@@ -24,6 +29,85 @@ interface ProductLinksTableProps {
   onDeleteLink?: (id: string) => void;
   onEditLink?: (link: ProductLink) => void;
 }
+
+// Link Preview Component
+const LinkPreview = ({ url, title }: { url: string, title: string }) => {
+  const [preview, setPreview] = useState<{
+    title?: string;
+    description?: string;
+    image?: string;
+    favicon?: string;
+  }>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const getFavicon = (domain: string) => {
+      return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+    };
+
+    try {
+      setLoading(true);
+      setError(false);
+      const domain = new URL(url).hostname;
+      const favicon = getFavicon(domain);
+      
+      // Simple preview with just favicon for now
+      // In a full implementation, you would use an API to fetch meta tags
+      setPreview({
+        title: title,
+        description: `Link to ${domain}`,
+        favicon: favicon
+      });
+      setLoading(false);
+    } catch (err) {
+      console.error("Error generating preview:", err);
+      setError(true);
+      setLoading(false);
+    }
+  }, [url, title]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-4">
+        <div className="h-5 w-5 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-4 text-gray-500">
+        <Info className="h-6 w-6 mx-auto mb-2" />
+        <p>Could not load preview</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full">
+      <div className="flex items-start gap-3">
+        {preview.favicon && (
+          <img 
+            src={preview.favicon} 
+            alt="" 
+            className="w-8 h-8 rounded"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        )}
+        <div>
+          <h3 className="font-medium text-sm">{preview.title || title}</h3>
+          <p className="text-xs text-gray-500">{preview.description}</p>
+          <div className="text-xs text-blue-500 mt-1 truncate">
+            {url}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ProductLinksTable = ({ links, onAddLink, onDeleteLink, onEditLink }: ProductLinksTableProps) => {
   const { user } = useAuth();
@@ -33,7 +117,7 @@ const ProductLinksTable = ({ links, onAddLink, onDeleteLink, onEditLink }: Produ
   const [orderedLinks, setOrderedLinks] = useState<ProductLink[]>(links);
 
   // Update ordered links when props change
-  React.useEffect(() => {
+  useEffect(() => {
     setOrderedLinks(links);
   }, [links]);
 
@@ -213,22 +297,31 @@ const ProductLinksTable = ({ links, onAddLink, onDeleteLink, onEditLink }: Produ
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      {getFaviconUrl(link.url) && (
-                        <img 
-                          src={getFaviconUrl(link.url) || ''} 
-                          alt="" 
-                          className="w-4 h-4"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      )}
-                      <div>
-                        <div className="font-medium">{link.source_name}</div>
-                        <div className="text-sm text-muted-foreground">{link.product_name}</div>
-                      </div>
-                    </div>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <div className="flex items-center gap-2 cursor-pointer">
+                          {getFaviconUrl(link.url) && (
+                            <img 
+                              src={getFaviconUrl(link.url) || ''} 
+                              alt="" 
+                              className="w-4 h-4"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          )}
+                          <div>
+                            <div className="font-medium hover:text-blue-600 hover:underline transition-colors">{link.source_name}</div>
+                            <div className="text-sm text-muted-foreground">{link.product_name}</div>
+                          </div>
+                        </div>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-80 p-0">
+                        <div className="p-4 bg-white rounded-md shadow-lg border">
+                          <LinkPreview url={link.url} title={link.product_name} />
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
                   </TableCell>
                   
                   {(displayMode === 'all' || displayMode === 'prices') && (
@@ -258,8 +351,22 @@ const ProductLinksTable = ({ links, onAddLink, onDeleteLink, onEditLink }: Produ
                   )}
                   
                   {(displayMode === 'all') && (
-                    <TableCell className="max-w-[200px] truncate">
-                      {link.comments || '—'}
+                    <TableCell className="max-w-[200px]">
+                      {link.comments ? (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
+                              <MessageCircle className="h-3 w-3 mr-1" />
+                              View
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent>
+                            <div className="text-sm">{link.comments}</div>
+                          </PopoverContent>
+                        </Popover>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
                     </TableCell>
                   )}
                   
@@ -269,6 +376,7 @@ const ProductLinksTable = ({ links, onAddLink, onDeleteLink, onEditLink }: Produ
                         variant="outline"
                         size="sm"
                         onClick={() => window.open(link.url, '_blank')}
+                        title="Visit product page"
                       >
                         <ExternalLink className="h-4 w-4" />
                       </Button>
@@ -278,6 +386,7 @@ const ProductLinksTable = ({ links, onAddLink, onDeleteLink, onEditLink }: Produ
                           variant="outline"
                           size="sm"
                           onClick={() => handleEditLink(link)}
+                          title="Edit link"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -289,6 +398,7 @@ const ProductLinksTable = ({ links, onAddLink, onDeleteLink, onEditLink }: Produ
                           size="sm"
                           className="text-red-500 hover:text-red-700 hover:bg-red-50"
                           onClick={() => handleDeleteLink(link.id)}
+                          title="Delete link"
                         >
                           <Trash className="h-4 w-4" />
                         </Button>

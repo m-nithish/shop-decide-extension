@@ -27,6 +27,7 @@ const AddLinkDialog = ({ productId, open, onOpenChange, onLinkAdded }: AddLinkDi
     productName: '',
     url: '',
     price: '',
+    comments: '',
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,6 +49,7 @@ const AddLinkDialog = ({ productId, open, onOpenChange, onLinkAdded }: AddLinkDi
         p_product_name: formData.productName,
         p_url: formData.url,
         p_price: parseFloat(formData.price) || 0,
+        p_comments: formData.comments,
       });
       
       if (error) {
@@ -74,6 +76,7 @@ const AddLinkDialog = ({ productId, open, onOpenChange, onLinkAdded }: AddLinkDi
           price: parseFloat(formData.price) || 0,
           rating: 0,
           review_count: 0,
+          comments: formData.comments || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         };
@@ -84,6 +87,7 @@ const AddLinkDialog = ({ productId, open, onOpenChange, onLinkAdded }: AddLinkDi
           productName: '',
           url: '',
           price: '',
+          comments: '',
         });
         
         // Call onLinkAdded callback if provided
@@ -160,6 +164,16 @@ const AddLinkDialog = ({ productId, open, onOpenChange, onLinkAdded }: AddLinkDi
                 step="0.01"
                 min="0"
                 required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="comments">Comments</Label>
+              <Input
+                id="comments"
+                name="comments"
+                placeholder="Optional comments about this product"
+                value={formData.comments}
+                onChange={handleChange}
               />
             </div>
           </div>

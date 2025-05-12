@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import ProductNotes from '@/components/ProductNotes';
 import ProductLinksTable from '@/components/ProductLinksTable';
 import ExternalSources from '@/components/ExternalSources';
 import { ProductLink, ExternalSource } from '@/types/supabase';
@@ -23,7 +22,6 @@ interface ProductDetailSidebarProps {
 
 const ProductDetailSidebar = ({ 
   productId, 
-  notes, 
   productLinks, 
   externalSources,
   onProductLinksChange,
@@ -101,11 +99,7 @@ const ProductDetailSidebar = ({
   };
 
   return (
-    <div className="space-y-6">
-      <CollapsibleSection title="My Notes" defaultOpen={true}>
-        <ProductNotes productId={productId} initialNotes={notes} />
-      </CollapsibleSection>
-      
+    <div className="space-y-4">
       <CollapsibleSection 
         title="Product Comparison" 
         defaultOpen={true} 
