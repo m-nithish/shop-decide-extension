@@ -46,20 +46,19 @@ export type SaveProductLinkParams = {
   p_comments?: string;
 };
 
-export type ProductLink = {
+export interface ProductLink {
   id: string;
-  product_id: string;
-  product_uuid: string | null;
+  product_id?: string;
   source_name: string;
   product_name: string;
   url: string;
-  price: number | null;
-  rating: number | null;
-  review_count: number | null;
-  comments: string | null;
-  created_at: string;
-  updated_at: string;
-};
+  price: number;
+  rating?: number;
+  review_count?: number;
+  created_at?: string;
+  updated_at?: string;
+  comments?: string;
+}
 
 export type GetProductLinksResponse = {
   data: ProductLink[] | null;

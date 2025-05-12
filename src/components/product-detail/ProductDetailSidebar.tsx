@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 
 interface ProductDetailSidebarProps {
   productId: string;
-  notes: string;
   productLinks: ProductLink[];
   externalSources: ExternalSource[];
   onProductLinksChange?: (links: ProductLink[]) => void;
@@ -99,7 +98,7 @@ const ProductDetailSidebar = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mt-4">
       <CollapsibleSection 
         title="Product Comparison" 
         defaultOpen={true} 

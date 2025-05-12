@@ -192,17 +192,16 @@ const ProductDetail = () => {
                 notes={notes}
                 productId={id!} 
               />
+              
+              <ProductDetailSidebar 
+                productId={id!}
+                productLinks={productLinks}
+                externalSources={externalSources}
+                onProductLinksChange={handleProductLinksChange}
+                onExternalSourcesChange={handleExternalSourcesChange}
+              />
             </div>
           </div>
-          
-          <ProductDetailSidebar 
-            productId={id!}
-            notes={notes}
-            productLinks={productLinks}
-            externalSources={externalSources}
-            onProductLinksChange={handleProductLinksChange}
-            onExternalSourcesChange={handleExternalSourcesChange}
-          />
         </div>
       </main>
     </div>
