@@ -10,6 +10,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import BulletList from '@tiptap/extension-bullet-list';
+import ListItem from '@tiptap/extension-list-item';
 import OrderedList from '@tiptap/extension-ordered-list';
 import Heading from '@tiptap/extension-heading';
 
@@ -83,6 +84,7 @@ const RichTextNotes = ({ productId, initialNotes = '' }: RichTextNotesProps) => 
     extensions: [
       StarterKit,
       Underline,
+      ListItem,
       BulletList,
       OrderedList,
       Heading.configure({
@@ -91,6 +93,7 @@ const RichTextNotes = ({ productId, initialNotes = '' }: RichTextNotesProps) => 
     ],
     content: initialNotes,
     editable: isEditing,
+    placeholder: "Add your color preference, size requirements, or other criteria...",
   });
   
   // Update editor content when initialNotes changes
@@ -143,11 +146,12 @@ const RichTextNotes = ({ productId, initialNotes = '' }: RichTextNotesProps) => 
   return (
     <div className="space-y-4">
       {isEditing ? (
-        <div className="space-y-2 border rounded-md p-3 bg-white">
+        <div className="space-y-2 border rounded-md p-3 bg-white shadow-sm">
           <MenuBar editor={editor} />
           <EditorContent 
             editor={editor}
-            className="min-h-[150px] prose max-w-none prose-sm prose-stone focus:outline-none"
+            className="min-h-[200px] prose max-w-none prose-sm prose-stone focus:outline-none border border-gray-200 rounded-md p-3 shadow-inner"
+            placeholder="Add your color preference, size requirements, or other criteria..."
           />
           <div className="flex gap-2 mt-3 pt-2 border-t">
             <Button onClick={handleSaveNotes} className="flex items-center gap-2">
@@ -177,7 +181,7 @@ const RichTextNotes = ({ productId, initialNotes = '' }: RichTextNotesProps) => 
             </div>
           ) : (
             <>
-              <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                 {editor && (
                   <div 
                     className="prose prose-sm max-w-none prose-stone"

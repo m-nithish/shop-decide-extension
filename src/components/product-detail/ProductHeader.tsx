@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -27,24 +28,25 @@ const ProductHeader = ({ product, collection, onDelete }: ProductHeaderProps) =>
 
   return (
     <div className="mb-6">
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        className="mb-4"
-        onClick={handleBackClick}
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" /> Back
-      </Button>
-      
-      <div className="flex justify-between items-start">
-        <h1 className="text-2xl font-bold">{product.title}</h1>
+      <div className="flex justify-between items-center mb-4">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleBackClick}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" /> Back
+        </Button>
+        
         <Button 
           variant="destructive"
+          size="sm"
           onClick={onDelete}
         >
           <Trash className="h-4 w-4 mr-2" /> Delete
         </Button>
       </div>
+      
+      <h1 className="text-2xl font-bold">{product.title}</h1>
     </div>
   );
 };

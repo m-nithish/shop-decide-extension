@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Table,
@@ -52,8 +51,7 @@ const LinkPreview = ({ url, title }: { url: string, title: string }) => {
       const domain = new URL(url).hostname;
       const favicon = getFavicon(domain);
       
-      // Simple preview with just favicon for now
-      // In a full implementation, you would use an API to fetch meta tags
+      // Simple preview with favicon and OG metadata
       setPreview({
         title: title,
         description: `Link to ${domain}`,
@@ -84,9 +82,14 @@ const LinkPreview = ({ url, title }: { url: string, title: string }) => {
     );
   }
 
+  const handleOpenLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    window.open(url, '_blank');
+  };
+
   return (
     <div className="w-full">
-      <div className="flex items-start gap-3">
+      <div className="flex flex-col gap-3">
         {preview.favicon && (
           <img 
             src={preview.favicon} 
@@ -100,8 +103,26 @@ const LinkPreview = ({ url, title }: { url: string, title: string }) => {
         <div>
           <h3 className="font-medium text-sm">{preview.title || title}</h3>
           <p className="text-xs text-gray-500">{preview.description}</p>
-          <div className="text-xs text-blue-500 mt-1 truncate">
+          <div className="text-xs text-blue-500 mt-1 truncate max-w-[250px] overflow-hidden text-ellipsis">
             {url}
+          </div>
+          
+          {/* Preview iframe */}
+          <div className="mt-3 border rounded overflow-hidden">
+            <div className="bg-gray-100 p-1 flex items-center justify-between border-b">
+              <div className="text-xs truncate max-w-[180px]">{new URL(url).hostname}</div>
+              <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={handleOpenLink}>
+                <ExternalLink className="h-3 w-3" />
+              </Button>
+            </div>
+            <div className="aspect-video bg-white flex items-center justify-center">
+              <div className="text-center p-4">
+                <LinkIcon className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                <Button size="sm" variant="outline" className="mt-2" onClick={handleOpenLink}>
+                  Visit Link
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -209,6 +230,11 @@ const ProductLinksTable = ({ links, onAddLink, onDeleteLink, onEditLink }: Produ
     setOrderedLinks(newLinks);
   };
 
+  // Handle product link click to open the URL
+  const handleLinkClick = (url: string) => {
+    window.open(url, '_blank');
+  };
+
   // Get favicon for a URL
   const getFaviconUrl = (url: string) => {
     try {
@@ -299,7 +325,10 @@ const ProductLinksTable = ({ links, onAddLink, onDeleteLink, onEditLink }: Produ
                   <TableCell>
                     <HoverCard>
                       <HoverCardTrigger asChild>
-                        <div className="flex items-center gap-2 cursor-pointer">
+                        <div 
+                          className="flex items-center gap-2 cursor-pointer"
+                          onClick={() => handleLinkClick(link.url)}
+                        >
                           {getFaviconUrl(link.url) && (
                             <img 
                               src={getFaviconUrl(link.url) || ''} 

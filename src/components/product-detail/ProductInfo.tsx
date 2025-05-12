@@ -80,7 +80,7 @@ const ProductInfo = ({ product, collection, notes, productId }: ProductInfoProps
 
   return (
     <Card className="mb-6 border border-gray-200 shadow-sm">
-      <CardHeader className="p-3 border-b bg-gray-50 flex justify-between items-center">
+      <CardHeader className="p-3 border-b bg-gray-50 flex flex-row justify-between items-center">
         <CardTitle className="text-xl">Product Details</CardTitle>
         <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)} className="flex items-center">
           <Edit className="h-4 w-4 mr-2" />
