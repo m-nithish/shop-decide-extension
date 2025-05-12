@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -69,14 +68,11 @@ const AddLinkDialog = ({ productId, open, onOpenChange, onLinkAdded }: AddLinkDi
         const newLink: ProductLink = {
           id: data,
           product_id: productId,
-          product_uuid: null, // Add the missing property
           source_name: formData.sourceName,
           product_name: formData.productName,
           url: formData.url,
           price: parseFloat(formData.price) || 0,
-          rating: 0,
-          review_count: 0,
-          comments: formData.comments || null,
+          comments: formData.comments || '',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         };
