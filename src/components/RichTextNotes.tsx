@@ -92,7 +92,7 @@ const RichTextNotes = ({ productId, initialNotes = '' }: RichTextNotesProps) => 
           keepAttributes: false,
         },
         listItem: {
-          keepAttributes: false,
+          
         },
         heading: {
           levels: [1, 2, 3],
