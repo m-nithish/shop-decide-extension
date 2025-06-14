@@ -83,17 +83,41 @@ const RichTextNotes = ({ productId, initialNotes = '' }: RichTextNotesProps) => 
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        bulletList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
+        orderedList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
+        listItem: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
+        heading: {
+          levels: [1, 2, 3],
+        },
+      }),
       Underline,
+      BulletList.configure({
+        HTMLAttributes: {
+          class: 'my-custom-bullet-list',
+        },
+      }),
+      OrderedList.configure({
+        HTMLAttributes: {
+          class: 'my-custom-ordered-list',
+        },
+      }),
       ListItem,
-      BulletList,
-      OrderedList,
       Heading.configure({
-        levels: [2, 3]
+        levels: [1, 2, 3],
       }),
       Placeholder.configure({
-        placeholder: 'Add your color preference, size requirements, or other criteria...'
-      })
+        placeholder: 'Add your color preference, size requirements, or other criteria...',
+      }),
     ],
     content: initialNotes,
     editable: isEditing,
@@ -153,7 +177,7 @@ const RichTextNotes = ({ productId, initialNotes = '' }: RichTextNotesProps) => 
           <MenuBar editor={editor} />
           <EditorContent 
             editor={editor}
-            className="min-h-[200px] prose max-w-none prose-sm prose-stone focus:outline-none border border-gray-200 rounded-md p-4 shadow-inner"
+            className="min-h-[200px] prose max-w-none prose-sm prose-stone focus:outline-none border border-gray-200 rounded-md p-4 shadow-inner prose-headings:text-gray-800 prose-ul:list-disc prose-ol:list-decimal prose-li:ml-4"
           />
           <div className="flex gap-2 mt-3 pt-2 border-t">
             <Button onClick={handleSaveNotes} className="flex items-center gap-2">
@@ -186,7 +210,7 @@ const RichTextNotes = ({ productId, initialNotes = '' }: RichTextNotesProps) => 
               <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                 {editor && (
                   <div 
-                    className="prose prose-sm max-w-none prose-stone"
+                    className="prose prose-sm max-w-none prose-stone prose-headings:text-gray-800 prose-ul:list-disc prose-ol:list-decimal prose-li:ml-4"
                     dangerouslySetInnerHTML={{ __html: editor.getHTML() }}
                   />
                 )}

@@ -48,6 +48,7 @@
     "@tiptap/extension-ordered-list": "^2.1.16",
     "@tiptap/extension-placeholder": "^2.1.16",
     "@tiptap/extension-underline": "^2.1.16",
+    "@tiptap/pm": "^2.14.0",
     "@tiptap/react": "^2.1.16",
     "@tiptap/starter-kit": "^2.1.16",
     "class-variance-authority": "^0.7.1",
