@@ -45,15 +45,15 @@ const LinkPreview = ({ url, title }: { url: string, title: string }) => {
       return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
     };
 
-    const getOgImage = (domain: string) => {
+    const getOgImage = (domain: string, urlString: string) => {
       // Get placeholder image based on domain
       if (domain.includes('amazon')) {
         return 'https://m.media-amazon.com/images/G/01/social_share/amazon_logo._CB633266945_.png';
       } else if (domain.includes('youtube')) {
         // For YouTube links, try to extract video ID and get thumbnail
         try {
-          const url = new URL(url);
-          const videoId = url.searchParams.get('v');
+          const urlObj = new URL(urlString);
+          const videoId = urlObj.searchParams.get('v');
           if (videoId) {
             return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
           }
@@ -84,7 +84,7 @@ const LinkPreview = ({ url, title }: { url: string, title: string }) => {
       setError(false);
       const domain = new URL(url).hostname;
       const favicon = getFavicon(domain);
-      const ogImage = getOgImage(domain);
+      const ogImage = getOgImage(domain, url);
       
       setPreview({
         title: title,
