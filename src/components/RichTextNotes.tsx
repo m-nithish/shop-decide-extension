@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
@@ -93,7 +92,6 @@ const RichTextNotes = ({ productId, initialNotes = '' }: RichTextNotesProps) => 
           keepAttributes: false,
         },
         listItem: {
-          keepMarks: true,
           keepAttributes: false,
         },
         heading: {
